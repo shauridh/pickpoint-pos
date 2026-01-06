@@ -22,19 +22,20 @@ const formatCurrency = (value?: string) => {
   }).format(numeric);
 };
 
-export default function PaymentSuccessPage({
+export default async function PaymentSuccessPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const orderId = getParam(searchParams, ["order_id", "orderId", "order"]);
-  const grossAmount = getParam(searchParams, [
+  const params = await searchParams;
+  const orderId = getParam(params, ["order_id", "orderId", "order"]);
+  const grossAmount = getParam(params, [
     "gross_amount",
     "grossAmount",
     "amount",
   ]);
   const status =
-    getParam(searchParams, [
+    getParam(params, [
       "transaction_status",
       "transactionStatus",
       "status",

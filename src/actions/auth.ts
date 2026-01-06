@@ -16,7 +16,7 @@ export async function loginUser(phone: string, pin: string) {
 
     // For demo, allow any PIN that matches the hashed one
     // In production, implement proper PIN verification
-    const pinMatch = user.pin ? await bcrypt.compare(pin, user.pin) : pin === "123456";
+    const pinMatch = user.pin ? await bcrypt.compare(pin, user.pin) : false;
 
     if (!pinMatch) {
       return { success: false, message: "PIN salah" };
@@ -34,6 +34,81 @@ export async function loginUser(phone: string, pin: string) {
   } catch (error) {
     console.error("Login error:", error);
     return { success: false, message: "Terjadi kesalahan" };
+  }
+}
+
+export async function checkUserExists(phone: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { phone },
+      select: { id: true, name: true, role: true }
+    });
+
+    return {
+      exists: !!user,
+      isNewUser: !user,
+      userName: user?.name,
+      role: user?.role
+    };
+  } catch (error) {
+    console.error("Check user error:", error);
+    return { exists: false, isNewUser: true };
+  }
+}
+
+export async function registerUser(data: {
+  phone: string;
+  name: string;
+  pin: string;
+  unit?: string;
+  apartmentName?: string;
+}) {
+  try {
+    // Check if user already exists
+    const existing = await prisma.user.findUnique({
+      where: { phone: data.phone }
+    });
+
+    if (existing) {
+      return { success: false, message: "Nomor HP sudah terdaftar" };
+    }
+
+    // Validate PIN (must be 6 digits)
+    if (!/^\d{6}$/.test(data.pin)) {
+      return { success: false, message: "PIN harus 6 digit angka" };
+    }
+
+    // Hash PIN
+    const hashedPin = await bcrypt.hash(data.pin, 10);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        phone: data.phone,
+        name: data.name,
+        pin: hashedPin,
+        unit: data.unit || "",
+        apartmentName: data.apartmentName || "",
+        role: "CUSTOMER"
+      }
+    });
+
+    // Auto-login after registration
+    await setSession({
+      userId: user.id,
+      phone: user.phone,
+      name: user.name,
+      isLoggedIn: true,
+    });
+
+    return {
+      success: true,
+      message: "Registrasi berhasil!",
+      userId: user.id
+    };
+  } catch (error) {
+    console.error("Register error:", error);
+    return { success: false, message: "Terjadi kesalahan saat registrasi" };
   }
 }
 

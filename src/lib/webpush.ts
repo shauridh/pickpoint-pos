@@ -53,7 +53,7 @@ export async function sendNotification(
         sent++;
       } catch (error: any) {
         console.error(`Failed to send notification:`, error);
-        
+
         // Remove invalid subscriptions (410 = subscription expired)
         if (error.statusCode === 410) {
           console.log(`Removing expired subscription for user ${userId}`);
@@ -75,12 +75,14 @@ export async function sendNotification(
  */
 export async function notifyPackageArrival(
   userId: string,
+  name: string,
   receiptNumber: string,
   locationName: string
 ): Promise<void> {
+  const link = `${process.env.NEXT_PUBLIC_APP_URL || "https://pickpoint.my.id"}/dashboard`;
   await sendNotification(userId, {
     title: "📦 Paket Tiba!",
-    body: `Paket dengan resi ${receiptNumber} telah diterima di ${locationName}`,
+    body: `HI ${name}, Paket anda ${receiptNumber} sudah dapat diambil di Pickpoint ${locationName}. Untuk detail informasi dapat membuka link berikut ${link}`,
     icon: "/icon-192x192.png",
     badge: "/badge-72x72.png",
     data: {
@@ -94,23 +96,49 @@ export async function notifyPackageArrival(
 /**
  * Send notification about payment success
  */
-export async function notifyPaymentSuccess(
+export async function notifyMembershipSuccess(
   userId: string,
-  amount: number,
-  type: "package" | "membership"
+  name: string,
+  expiryDate: Date
 ): Promise<void> {
-  const message =
-    type === "package"
-      ? `Pembayaran paket sebesar Rp ${amount.toLocaleString("id-ID")} berhasil`
-      : `Pembayaran membership sebesar Rp ${amount.toLocaleString("id-ID")} berhasil`;
+  const formattedDate = expiryDate.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   await sendNotification(userId, {
-    title: "✅ Pembayaran Berhasil",
-    body: message,
+    title: "👑 Membership Aktif",
+    body: `Halo ${name}, pembayaran membership anda berhasil! Masa aktif member anda telah diperpanjang hingga ${formattedDate}. Terima kasih!`,
     icon: "/icon-192x192.png",
     data: {
       url: "/dashboard",
-      type: "payment_success",
+      type: "membership_success",
+    },
+  });
+}
+
+/**
+ * Send membership expiry reminder via push
+ */
+export async function notifyMembershipReminder(
+  userId: string,
+  name: string,
+  expiryDate: Date
+): Promise<void> {
+  const formattedDate = expiryDate.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  await sendNotification(userId, {
+    title: "⏰ Reminder Membership",
+    body: `Halo ${name}, masa aktif membership anda akan segera berakhir pada ${formattedDate}. Segera lakukan perpanjangan untuk tetap menikmati layanan kami.`,
+    icon: "/icon-192x192.png",
+    data: {
+      url: "/dashboard",
+      type: "membership_reminder",
     },
   });
 }

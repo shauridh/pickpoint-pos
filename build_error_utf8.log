@@ -1,0 +1,132 @@
+﻿
+> app@0.1.0 build
+> next build
+
+   Γû▓ Next.js 15.1.0
+   - Experiments (use with caution):
+     ┬╖ reactCompiler
+
+   Creating an optimized production build ...
+node.exe : Failed to 
+compile.
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" "C:\U
+sers\Indah\AppData\Roa
+ming\ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Failed to    
+ compile.:String)     
+[], RemoteExcepti    
+on
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+./src/app/admin/custom
+ers/CustomersClient.ts
+x
+Error:   [31mx[0m 
+You're importing a 
+component that needs 
+`useState`. This 
+React hook only works 
+in a client 
+component. To fix, 
+mark the file (or its 
+parent) with the 
+`"use client"` 
+directive.
+  [31m|[0m 
+  [31m|[0m  Learn 
+more: https://nextjs.o
+rg/docs/app/api-refere
+nce/directives/use-cli
+ent
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4mD:\pick
+point-pos\src\app\admi
+n\customers\CustomersC
+lient.tsx[0m:1:1]
+ [2m1[0m | import 
+React, { useState, 
+useMemo, 
+useTransition } from 
+"react";
+   : [35;1m          
+      ^^^^^^^^[0m
+ [2m2[0m | import { 
+Card, CardContent, 
+CardHeader, CardTitle 
+} from "@/components/u
+i/card";
+ [2m3[0m | import { 
+Badge } from "@/compon
+ents/ui/badge";
+ [2m3[0m | import { 
+Input } from "@/compon
+ents/ui/input";
+   `----
+  [31mx[0m You're 
+importing a component 
+that needs 
+`useTransition`. This 
+React hook only works 
+in a client 
+component. To fix, 
+mark the file (or its 
+parent) with the 
+`"use client"` 
+directive.
+  [31m|[0m 
+  [31m|[0m  Learn 
+more: https://nextjs.o
+rg/docs/app/api-refere
+nce/directives/use-cli
+ent
+  [31m|[0m 
+  [31m|[0m 
+   ,-[[36;1;4mD:\pick
+point-pos\src\app\admi
+n\customers\CustomersC
+lient.tsx[0m:1:1]
+ [2m1[0m | import 
+React, { useState, 
+useMemo, 
+useTransition } from 
+"react";
+   : [35;1m          
+                      
+   ^^^^^^^^^^^^^[0m
+ [2m2[0m | import { 
+Card, CardContent, 
+CardHeader, CardTitle 
+} from "@/components/u
+i/card";
+ [2m3[0m | import { 
+Badge } from "@/compon
+ents/ui/badge";
+ [2m3[0m | import { 
+Input } from "@/compon
+ents/ui/input";
+   `----
+
+Import trace for 
+requested module:
+./src/app/admin/custom
+ers/CustomersClient.ts
+x
+./src/app/admin/custom
+ers/page.tsx
+
+
+> Build failed 
+because of webpack 
+errors

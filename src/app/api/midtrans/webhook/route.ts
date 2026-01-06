@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifySignature } from "@/lib/midtrans";
-import { notifyPaymentSuccess } from "@/lib/webpush";
-import { notifyPaymentSuccessWhatsApp } from "@/lib/whatsapp";
+import { notifyMembershipSuccess } from "@/lib/webpush";
+import { notifyMembershipSuccessWhatsApp } from "@/lib/whatsapp";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       order_id,
       transaction_status,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         where: { id: order_id },
         data: { status: "FAILED" },
       });
-      
+
       return NextResponse.json({
         success: true,
         message: "Transaction marked as failed",
@@ -105,10 +105,10 @@ export async function POST(request: NextRequest) {
       });
 
       // Handle based on transaction type
-      if (transaction.type === "PACKAGE_FEE" && transaction.packageId) {
+      if (transaction.type === "PACKAGE_FEE" && transaction.relatedPackageId) {
         // Update package payment status
         await prisma.package.update({
-          where: { id: transaction.packageId },
+          where: { id: transaction.relatedPackageId },
           data: {
             paymentStatus: "PAID",
             status: "PAID",
@@ -117,25 +117,8 @@ export async function POST(request: NextRequest) {
 
         console.log(`Package ${transaction.package?.receiptNumber} marked as paid`);
 
-        // Send notification
-        try {
-          await Promise.all([
-            notifyPaymentSuccess(
-              transaction.userId,
-              Number(transaction.amount),
-              "package"
-            ),
-            notifyPaymentSuccessWhatsApp(
-              transaction.user.phone,
-              transaction.user.name,
-              Number(transaction.amount),
-              "package"
-            ),
-          ]);
-        } catch (error) {
-          console.error("Failed to send payment notification:", error);
-        }
-      } else if (transaction.type === "MEMBERSHIP_BUY" && transaction.membershipPlanId) {
+        console.log(`Package ${transaction.package?.receiptNumber} marked as paid`);
+      } else if (transaction.type === "MEMBERSHIP_BUY" && transaction.relatedPlanId) {
         // Update user membership
         const currentUser = await prisma.user.findUnique({
           where: { id: transaction.userId },
@@ -163,16 +146,15 @@ export async function POST(request: NextRequest) {
         // Send notification
         try {
           await Promise.all([
-            notifyPaymentSuccess(
+            notifyMembershipSuccess(
               transaction.userId,
-              Number(transaction.amount),
-              "membership"
+              transaction.user.name,
+              newExpiryDate
             ),
-            notifyPaymentSuccessWhatsApp(
+            notifyMembershipSuccessWhatsApp(
               transaction.user.phone,
               transaction.user.name,
-              Number(transaction.amount),
-              "membership"
+              newExpiryDate
             ),
           ]);
         } catch (error) {

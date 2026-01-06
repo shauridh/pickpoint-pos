@@ -1,22 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { loginUser } from "@/actions/auth";
+import { loginUser, registerUser, checkUserExists } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
-type LoginStep = "phone" | "otp" | "pin";
+type LoginStep = "phone" | "pin" | "register";
 
 export default function LoginPage() {
   const [step, setStep] = useState<LoginStep>("phone");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
   const [pin, setPin] = useState("");
+  const [name, setName] = useState("");
+  const [unit, setUnit] = useState("");
+  const [apartmentName, setApartmentName] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -46,39 +49,95 @@ export default function LoginPage() {
       });
       return;
     }
+
     const formattedPhone = formatPhone(phone);
     setPhone(formattedPhone);
-    
+
     if (rememberMe) {
       localStorage.setItem("savedPhone", formattedPhone);
     } else {
       localStorage.removeItem("savedPhone");
     }
-    
-    // Simulate OTP sent
-    toast({
-      title: "Sukses",
-      description: `OTP dikirim ke ${formattedPhone} (simulasi)`,
-    });
-    setStep("otp");
-  };
 
-  const handleOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp) {
+    setIsLoading(true);
+    try {
+      const result = await checkUserExists(formattedPhone);
+
+      if (result.isNewUser) {
+        // New user → go to registration
+        setIsNewUser(true);
+        setStep("register");
+        toast({
+          title: "Pengguna Baru",
+          description: "Silakan lengkapi data untuk registrasi",
+        });
+      } else {
+        // Existing user → go to PIN
+        setIsNewUser(false);
+        setStep("pin");
+        toast({
+          title: `Selamat datang kembali, ${result.userName}!`,
+          description: "Masukkan PIN Anda",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Error",
-        description: "OTP tidak boleh kosong",
+        description: "Terjadi kesalahan, coba lagi",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name || !pin) {
+      toast({
+        title: "Error",
+        description: "Nama dan PIN harus diisi",
         variant: "destructive",
       });
       return;
     }
-    // Simulate OTP verification
-    toast({
-      title: "Sukses",
-      description: "OTP terverifikasi",
-    });
-    setStep("pin");
+
+    if (!/^\d{6}$/.test(pin)) {
+      toast({
+        title: "Error",
+        description: "PIN harus 6 digit angka",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await registerUser({
+        phone,
+        name,
+        pin,
+        unit,
+        apartmentName
+      });
+
+      if (result.success) {
+        toast({
+          title: "Sukses",
+          description: result.message,
+        });
+        router.push("/dashboard");
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePinSubmit = async (e: React.FormEvent) => {
@@ -87,6 +146,15 @@ export default function LoginPage() {
       toast({
         title: "Error",
         description: "PIN tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!/^\d{6}$/.test(pin)) {
+      toast({
+        title: "Error",
+        description: "PIN harus 6 digit angka",
         variant: "destructive",
       });
       return;
@@ -118,7 +186,11 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">PickPoint</CardTitle>
-          <CardDescription>Masuk ke akun Anda</CardDescription>
+          <CardDescription>
+            {step === "phone" && "Masuk atau daftar akun baru"}
+            {step === "pin" && "Masukkan PIN Anda"}
+            {step === "register" && "Lengkapi data registrasi"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {step === "phone" && (
@@ -148,31 +220,66 @@ export default function LoginPage() {
                   Ingat saya
                 </label>
               </div>
-              <Button type="submit" className="w-full">
-                Lanjutkan
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Memeriksa..." : "Lanjutkan"}
               </Button>
             </form>
           )}
 
-          {step === "otp" && (
-            <form onSubmit={handleOtpSubmit} className="space-y-4">
+          {step === "register" && (
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Kode OTP dikirim ke {phone}
+                Nomor: {phone}
               </p>
               <div>
-                <label className="text-sm font-medium">Kode OTP</label>
+                <label className="text-sm font-medium">Nama Lengkap *</label>
                 <Input
                   type="text"
-                  placeholder="000000"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.slice(0, 6))}
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-1"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Buat PIN (6 digit) *</label>
+                <Input
+                  type="password"
+                  placeholder="••••••"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.slice(0, 6))}
                   maxLength={6}
+                  className="mt-1"
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  PIN akan digunakan untuk login
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Unit (opsional)</label>
+                <Input
+                  type="text"
+                  placeholder="A-101"
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Nama Apartemen (opsional)</label>
+                <Input
+                  type="text"
+                  placeholder="Apartemen Sudirman"
+                  value={apartmentName}
+                  onChange={(e) => setApartmentName(e.target.value)}
                   className="mt-1"
                 />
               </div>
               <div className="space-y-2">
-                <Button type="submit" className="w-full">
-                  Verifikasi
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Proses..." : "Daftar"}
                 </Button>
                 <Button
                   type="button"
@@ -180,7 +287,10 @@ export default function LoginPage() {
                   className="w-full"
                   onClick={() => {
                     setStep("phone");
-                    setOtp("");
+                    setPin("");
+                    setName("");
+                    setUnit("");
+                    setApartmentName("");
                   }}
                 >
                   Ubah Nomor
@@ -192,7 +302,7 @@ export default function LoginPage() {
           {step === "pin" && (
             <form onSubmit={handlePinSubmit} className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Masukkan PIN (default: 123456)
+                Nomor: {phone}
               </p>
               <div>
                 <label className="text-sm font-medium">PIN (6 digit)</label>
@@ -203,6 +313,7 @@ export default function LoginPage() {
                   onChange={(e) => setPin(e.target.value.slice(0, 6))}
                   maxLength={6}
                   className="mt-1"
+                  autoFocus
                 />
               </div>
               <div className="space-y-2">
@@ -214,11 +325,11 @@ export default function LoginPage() {
                   variant="ghost"
                   className="w-full"
                   onClick={() => {
-                    setStep("otp");
+                    setStep("phone");
                     setPin("");
                   }}
                 >
-                  Kembali
+                  Ubah Nomor
                 </Button>
               </div>
             </form>

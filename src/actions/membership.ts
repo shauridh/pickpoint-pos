@@ -2,7 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { Prisma } from "@prisma/client";
+import { notifyMembershipReminder } from "@/lib/webpush";
+import { notifyMembershipReminderWhatsApp } from "@/lib/whatsapp";
 
 export async function updatePushSubscription(
   subscription: PushSubscription
@@ -16,7 +17,7 @@ export async function updatePushSubscription(
     const user = await prisma.user.update({
       where: { id: session.userId },
       data: {
-        pushSubscription: subscription as unknown as Prisma.InputJsonValue,
+        pushSubscription: subscription as any,
       },
     });
 
@@ -120,5 +121,39 @@ export async function simulatePaymentSuccess(transactionId: string) {
   } catch (error) {
     console.error("Payment simulation error:", error);
     return { success: false, message: "Gagal memproses pembayaran" };
+  }
+}
+
+export async function sendMembershipReminder(userId: string) {
+  try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        memberExpiryDate: true,
+      },
+    });
+
+    if (!user || !user.memberExpiryDate) {
+      return { success: false, message: "User atau data membership tidak ditemukan" };
+    }
+
+    // Send notifications
+    await Promise.allSettled([
+      notifyMembershipReminder(user.id, user.name, user.memberExpiryDate),
+      notifyMembershipReminderWhatsApp(user.phone, user.name, user.memberExpiryDate),
+    ]);
+
+    return { success: true, message: "Pengingat berhasil dikirim" };
+  } catch (error) {
+    console.error("Send reminder error:", error);
+    return { success: false, message: "Gagal mengirim pengingat" };
   }
 }

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getSession } from "@/lib/auth";
 
 type SerializablePackage = {
   id: string;
@@ -28,6 +29,7 @@ type SerializablePackage = {
   createdAt: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const serializePackage = (pkg: any): SerializablePackage => ({
   id: pkg.id,
   receiptNumber: pkg.receiptNumber,
@@ -67,6 +69,10 @@ export async function quickCreateUser(input: {
   apartmentName: string;
 }) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!input.name || !input.phone || !input.unit || !input.apartmentName) {
       return { success: false, message: "Semua field harus diisi" };
     }
@@ -115,11 +121,14 @@ export async function createPackageByStaff(input: {
   bypassPhoto?: boolean;
 }) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     const {
       courier,
       userId,
       receiptNumber,
-      size,
       photoUrl,
       locationId,
       useCustomPrice,
@@ -177,9 +186,9 @@ export async function createPackageByStaff(input: {
 
     await revalidatePath("/admin/dashboard");
     return { success: true, package: serializePackage(pkg) };
-  } catch (error: any) {
+  } catch (error) {
     console.error("createPackageByStaff error", error);
-    if ((error as any)?.code === "P2002") {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === "P2002") {
       return { success: false, message: "Nomor resi sudah digunakan" };
     }
     return { success: false, message: "Gagal membuat paket" };
@@ -188,6 +197,10 @@ export async function createPackageByStaff(input: {
 
 export async function handoverPackage(receiptNumber: string) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!receiptNumber) {
       return { success: false, message: "Masukkan nomor resi" };
     }
@@ -231,6 +244,10 @@ export async function handoverPackage(receiptNumber: string) {
 
 export async function markPackageAsPaidAction(receiptNumber: string) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!receiptNumber) {
       return { success: false, message: "Masukkan nomor resi" };
     }
@@ -271,6 +288,10 @@ export async function markPackageAsPaidAction(receiptNumber: string) {
 
 export async function destroyPackage(receiptNumber: string) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!receiptNumber) {
       return { success: false, message: "Masukkan nomor resi" };
     }

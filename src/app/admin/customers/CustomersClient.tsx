@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import React, { useState, useMemo, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Search, Crown, Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Search, Crown, Plus, Edit, Trash2, Loader2, Bell } from "lucide-react";
 import { createCustomer, updateCustomer, deleteCustomer } from "@/actions/crud";
+import { sendMembershipReminder } from "@/actions/membership";
 
 type Customer = {
   id: string;
@@ -131,6 +132,13 @@ export default function CustomersClient({ customers, locations }: { customers: C
       day: "numeric",
     });
 
+  const handleSendReminder = (id: string) => {
+    startTransition(async () => {
+      const result = await sendMembershipReminder(id);
+      alert(result.message);
+    });
+  };
+
   const isMemberActive = (expiry: string | null) => {
     if (!expiry) return false;
     return new Date(expiry) > new Date();
@@ -206,7 +214,7 @@ export default function CustomersClient({ customers, locations }: { customers: C
                       </td>
                       <td className="py-3 pr-4">
                         {customer.isMember &&
-                        isMemberActive(customer.memberExpiryDate) ? (
+                          isMemberActive(customer.memberExpiryDate) ? (
                           <Badge className="bg-amber-100 text-amber-800">
                             Aktif s/d{" "}
                             {customer.memberExpiryDate &&
@@ -221,6 +229,17 @@ export default function CustomersClient({ customers, locations }: { customers: C
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-2">
+                          {customer.isMember && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSendReminder(customer.id)}
+                              disabled={isPending}
+                              title="Kirim Pengingat Masa Aktif"
+                            >
+                              <Bell className="w-3 h-3 text-sky-600" />
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"

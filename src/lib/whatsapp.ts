@@ -83,7 +83,8 @@ export async function notifyPackageArrivalWhatsApp(
   locationName: string
 ): Promise<void> {
   const formattedPhone = formatWhatsAppNumber(phone);
-  const message = `Halo ${name},\n\n📦 Paket Anda telah tiba!\n\nNomor Resi: ${receiptNumber}\nLokasi: ${locationName}\n\nSilakan ambil paket Anda di lokasi tersebut.\n\nTerima kasih,\nPickPoint`;
+  const link = `${process.env.NEXT_PUBLIC_APP_URL || "https://pickpoint.my.id"}/dashboard`;
+  const message = `HI ${name}, \n\nPaket anda ${receiptNumber} sudah dapat diambil di Pickpoint ${locationName}.\n\nUntuk detail informasi dapat mebuka link berikut ${link}`;
 
   await sendWhatsAppMessage({
     to: formattedPhone,
@@ -94,17 +95,42 @@ export async function notifyPackageArrivalWhatsApp(
 /**
  * Send payment success notification via WhatsApp
  */
-export async function notifyPaymentSuccessWhatsApp(
+export async function notifyMembershipSuccessWhatsApp(
   phone: string,
   name: string,
-  amount: number,
-  type: "package" | "membership"
+  expiryDate: Date
 ): Promise<void> {
   const formattedPhone = formatWhatsAppNumber(phone);
-  const typeText = type === "package" ? "paket" : "membership";
-  const message = `Halo ${name},\n\n✅ Pembayaran ${typeText} Anda sebesar Rp ${amount.toLocaleString(
-    "id-ID"
-  )} telah berhasil.\n\nTerima kasih,\nPickPoint`;
+  const formattedDate = expiryDate.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const message = `Halo ${name},\n\npembayaran membership anda berhasil! Masa aktif member anda telah diperpanjang hingga ${formattedDate}. Terima kasih!`;
+
+  await sendWhatsAppMessage({
+    to: formattedPhone,
+    message,
+  });
+}
+
+/**
+ * Send membership reminder via WhatsApp
+ */
+export async function notifyMembershipReminderWhatsApp(
+  phone: string,
+  name: string,
+  expiryDate: Date
+): Promise<void> {
+  const formattedPhone = formatWhatsAppNumber(phone);
+  const formattedDate = expiryDate.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const message = `Halo ${name},\n\nmasa aktif membership anda akan segera berakhir pada ${formattedDate}. Segera lakukan perpanjangan untuk tetap menikmati layanan kami.`;
 
   await sendWhatsAppMessage({
     to: formattedPhone,

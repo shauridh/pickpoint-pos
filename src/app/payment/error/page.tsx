@@ -22,24 +22,25 @@ const formatCurrency = (value?: string) => {
   }).format(numeric);
 };
 
-export default function PaymentErrorPage({
+export default async function PaymentErrorPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const orderId = getParam(searchParams, ["order_id", "orderId", "order"]);
-  const grossAmount = getParam(searchParams, [
+  const params = await searchParams;
+  const orderId = getParam(params, ["order_id", "orderId", "order"]);
+  const grossAmount = getParam(params, [
     "gross_amount",
     "grossAmount",
     "amount",
   ]);
   const status =
-    getParam(searchParams, [
+    getParam(params, [
       "transaction_status",
       "transactionStatus",
       "status",
     ]) || "failed";
-  const message = getParam(searchParams, ["status_message", "statusMessage", "message"]);
+  const message = getParam(params, ["status_message", "statusMessage", "message"]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-rose-100 flex items-center justify-center p-6">

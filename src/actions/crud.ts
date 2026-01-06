@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getSession } from "@/lib/auth";
 
 const generateSlug = (text: string): string => {
   return text
@@ -18,6 +19,10 @@ export async function createCustomer(data: {
   apartmentName: string;
 }) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!data.name || !data.phone || !data.unit || !data.apartmentName) {
       return { success: false, message: "Semua field harus diisi" };
     }
@@ -58,6 +63,10 @@ export async function updateCustomer(
   }
 ) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!data.name || !data.phone || !data.unit || !data.apartmentName) {
       return { success: false, message: "Semua field harus diisi" };
     }
@@ -82,6 +91,10 @@ export async function updateCustomer(
 
 export async function deleteCustomer(id: string) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     await prisma.user.update({ where: { id }, data: { isActive: false } });
     revalidatePath("/admin/customers");
     return { success: true };
@@ -101,6 +114,10 @@ export async function createLocation(data: {
   price?: number; // Legacy support
 }) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!data.name) {
       return { success: false, message: "Nama lokasi harus diisi" };
     }
@@ -165,6 +182,10 @@ export async function updateLocation(
   }
 ) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!data.name) {
       return { success: false, message: "Nama valid harus diisi" };
     }
@@ -214,6 +235,10 @@ export async function updateLocation(
 
 export async function deleteLocation(id: number) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     await prisma.location.update({ where: { id }, data: { isActive: false } });
     revalidatePath("/admin/locations");
     return { success: true };
@@ -231,6 +256,10 @@ export async function createStaffUser(data: {
   locationId?: number;
 }) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!data.name || !data.phone || !data.role || !data.pin) {
       return { success: false, message: "Semua field harus diisi" };
     }
@@ -281,6 +310,10 @@ export async function updateStaffUser(
   }
 ) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     if (!data.name || !data.phone || !data.role) {
       return { success: false, message: "Semua field harus diisi" };
     }
@@ -316,6 +349,10 @@ export async function updateStaffUser(
 
 export async function deleteStaffUser(id: string) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     await prisma.user.update({ where: { id }, data: { isActive: false } });
     revalidatePath("/admin/users");
     return { success: true };
@@ -330,6 +367,10 @@ export async function updatePackageStatus(
   status: "PENDING_PICKUP" | "PAID" | "COMPLETED" | "RETURNED"
 ) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     const pkg = await prisma.package.update({
       where: { id },
       data: { status },
@@ -345,6 +386,10 @@ export async function updatePackageStatus(
 
 export async function markPackageAsPaid(id: string) {
   try {
+    const session = await getSession();
+    if (!session.isLoggedIn) {
+      return { success: false, message: "Unauthorized" };
+    }
     const pkg = await prisma.package.update({
       where: { id },
       data: { paymentStatus: "PAID" },

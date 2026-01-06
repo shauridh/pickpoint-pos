@@ -41,9 +41,9 @@ export type Stats = {
 };
 
 const statusLabels: Record<string, string> = {
-  PENDING_PICKUP: "Menunggu", 
-  PAID: "Lunas", 
-  COMPLETED: "Selesai", 
+  PENDING_PICKUP: "Menunggu",
+  PAID: "Lunas",
+  COMPLETED: "Selesai",
   RETURNED: "Retur",
 };
 
@@ -53,10 +53,10 @@ const paymentLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  PENDING_PICKUP: "bg-amber-100 text-amber-800",
-  PAID: "bg-emerald-100 text-emerald-800",
-  COMPLETED: "bg-blue-100 text-blue-800",
-  RETURNED: "bg-slate-200 text-slate-800",
+  PENDING_PICKUP: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  PAID: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  COMPLETED: "bg-sky-500/10 text-sky-500 border-sky-500/20",
+  RETURNED: "bg-rose-500/10 text-rose-500 border-rose-500/20",
 };
 
 export default function DashboardClient({ packages, stats }: { packages: PackageRow[]; stats: Stats }) {
@@ -114,35 +114,44 @@ export default function DashboardClient({ packages, stats }: { packages: Package
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="glass animate-in fade-in slide-in-from-bottom-4 duration-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Paket</CardTitle>
-            <PackageSearch className="h-4 w-4 text-slate-500" />
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Total Paket</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <PackageSearch className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPackages}</div>
-            <p className="text-xs text-slate-500">Menunggu: {stats.pendingCount} • Belum bayar: {stats.unpaidCount}</p>
+            <div className="text-3xl font-bold text-gradient">{stats.totalPackages}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              <span className="text-amber-500 font-medium">{stats.pendingCount}</span> Menunggu •
+              <span className="text-rose-500 font-medium ml-1">{stats.unpaidCount}</span> Belum bayar
+            </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="glass animate-in fade-in slide-in-from-bottom-4 duration-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pembayaran</CardTitle>
-            <ShieldCheck className="h-4 w-4 text-slate-500" />
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Pembayaran</CardTitle>
+            <div className="p-2 bg-emerald-500/10 rounded-lg">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.paidCount}</div>
-            <p className="text-xs text-slate-500">Sudah bayar</p>
+            <div className="text-3xl font-bold text-emerald-500">{stats.paidCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Sudah terverifikasi lunas</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="glass animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">User & Lokasi</CardTitle>
-            <MapPin className="h-4 w-4 text-slate-500" />
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">User & Lokasi</CardTitle>
+            <div className="p-2 bg-sky-500/10 rounded-lg">
+              <MapPin className="h-4 w-4 text-sky-500" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.locationsCount} lokasi</div>
-            <p className="text-xs text-slate-500">{stats.usersCount} pengguna</p>
+            <div className="text-3xl font-bold text-sky-600">{stats.locationsCount} <span className="text-sm font-normal text-muted-foreground">Lokasi</span></div>
+            <p className="text-xs text-muted-foreground mt-1">{stats.usersCount} pengguna terdaftar</p>
           </CardContent>
         </Card>
       </div>

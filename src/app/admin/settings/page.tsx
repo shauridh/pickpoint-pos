@@ -16,20 +16,20 @@ type TemplateKey =
 type TemplateState = Record<TemplateKey, string>;
 
 const defaults: TemplateState = {
-  package_push: "📦 Paket {receiptNumber} tiba di {location}.",
+  package_push: "📦 HI {name}, Paket anda {receiptNumber} sudah dapat diambil di Pickpoint {location}.",
   package_whatsapp:
-    "Halo {name},\n\nPaket dengan resi {receiptNumber} sudah tiba di {location}.\nSilakan ambil di jam operasional.\n\nTerima kasih, PickPoint",
-  payment_push: "✅ Pembayaran {type} berhasil sebesar {amount}.",
+    "HI {name}, Paket anda {receiptNumber} sudah dapat diambil di Pickpoint {location}. Untuk detail informasi dapat membuka link berikut {link}",
+  payment_push: "✅ Halo {name}, pembayaran membership anda berhasil!",
   payment_whatsapp:
-    "Halo {name},\n\nPembayaran {type} sebesar {amount} sudah diterima.\nTerima kasih telah menggunakan PickPoint!",
+    "Halo {name}, pembayaran membership anda berhasil! Masa aktif member anda telah diperpanjang hingga {expiryDate}. Terima kasih!",
   reminder_whatsapp:
-    "Halo {name},\n\nPaket {receiptNumber} menunggu pembayaran sebesar {amount}.\nSudah {days} hari di lokasi. Mohon segera diselesaikan, ya.",
+    "Halo {name}, masa aktif membership anda akan segera berakhir pada {expiryDate}. Segera lakukan perpanjangan untuk tetap menikmati layanan kami.",
 };
 
 const variables = {
-  package: ["{name}", "{receiptNumber}", "{location}"],
-  payment: ["{name}", "{amount}", "{type}"],
-  reminder: ["{name}", "{receiptNumber}", "{amount}", "{days}"],
+  package: ["{name}", "{receiptNumber}", "{location}", "{link}"],
+  payment: ["{name}", "{expiryDate}"],
+  reminder: ["{name}", "{expiryDate}"],
 };
 
 export default function AdminSettingsPage() {

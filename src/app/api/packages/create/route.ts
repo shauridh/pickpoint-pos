@@ -14,6 +14,13 @@ const formatLocationName = (slug?: string) => {
 
 export async function POST(request: NextRequest) {
   try {
+    const authHeader = request.headers.get("authorization");
+    const apiKey = process.env.COURIER_API_KEY;
+
+    if (apiKey && authHeader !== `Bearer ${apiKey}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { courier, userId, receiptNumber, size, photoUrl, locationSlug } = body;
 
@@ -86,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Send push notification to user
     try {
-      await notifyPackageArrival(userId, receiptNumber, location.name);
+      await notifyPackageArrival(userId, pkg.user.name, receiptNumber, location.name);
     } catch (error) {
       console.error("Failed to send push notification:", error);
       // Don't fail the request if notification fails
