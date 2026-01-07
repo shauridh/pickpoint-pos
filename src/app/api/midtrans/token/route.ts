@@ -25,12 +25,12 @@ export async function POST(request: NextRequest) {
             phone: true,
           },
         },
-        package: {
+        relatedPackage: {
           select: {
             receiptNumber: true,
           },
         },
-        membershipPlan: {
+        relatedPlan: {
           select: {
             name: true,
           },
@@ -57,17 +57,17 @@ export async function POST(request: NextRequest) {
     let itemName = "";
 
     if (transaction.type === "PACKAGE_FEE") {
-      itemName = `Biaya Paket - ${transaction.package?.receiptNumber || "Unknown"}`;
+      itemName = `Biaya Paket - ${transaction.relatedPackage?.receiptNumber || "Unknown"}`;
       itemDetails.push({
-        id: `PKG-${transaction.packageId}`,
+        id: `PKG-${transaction.relatedPackageId}`,
         name: itemName,
         price: Number(transaction.amount),
         quantity: 1,
       });
     } else if (transaction.type === "MEMBERSHIP_BUY") {
-      itemName = `Membership - ${transaction.membershipPlan?.name || "Plan"}`;
+      itemName = `Membership - ${transaction.relatedPlan?.name || "Plan"}`;
       itemDetails.push({
-        id: `MBR-${transaction.membershipPlanId}`,
+        id: `MBR-${transaction.relatedPlanId}`,
         name: itemName,
         price: Number(transaction.amount),
         quantity: 1,
