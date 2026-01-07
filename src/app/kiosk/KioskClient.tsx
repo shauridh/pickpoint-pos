@@ -159,7 +159,7 @@ export default function KioskClient({
       // Update live feed
       if (result.package) {
         setPackages((prev) =>
-          prev.map((p) => (p.id === result.package?.id ? (result.package as PackageItem) : p))
+          prev.map((p) => (p.id === result.package?.id ? (result.package as unknown as PackageItem) : p))
         );
       }
 
@@ -182,13 +182,13 @@ export default function KioskClient({
       }
 
       setMessage({ type: "success", text: "✅ Paket ditandai sudah dibayar!" });
-      
+
       // Update live feed and selected package
       if (result.package) {
         setPackages((prev) =>
-          prev.map((p) => (p.id === result.package?.id ? (result.package as PackageItem) : p))
+          prev.map((p) => (p.id === result.package?.id ? (result.package as unknown as PackageItem) : p))
         );
-        setSelectedPackage(result.package as PackageItem);
+        setSelectedPackage(result.package as unknown as PackageItem);
       }
 
       // Auto clear success message
@@ -251,7 +251,7 @@ export default function KioskClient({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-2rem)]">
-        
+
         {/* LEFT PANEL - Scan & Handover */}
         <div className="space-y-4">
           {/* Header */}
@@ -295,9 +295,9 @@ export default function KioskClient({
                       </div>
                     )}
                   </div>
-                  <Button 
-                    onClick={handleSearch} 
-                    size="lg" 
+                  <Button
+                    onClick={handleSearch}
+                    size="lg"
                     disabled={isSubmitting}
                     className="h-16 px-6 text-lg bg-blue-600 hover:bg-blue-700"
                   >
@@ -308,11 +308,10 @@ export default function KioskClient({
                 {/* Message Alert */}
                 {message && (
                   <div
-                    className={`rounded-lg p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
-                      message.type === "success"
+                    className={`rounded-lg p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${message.type === "success"
                         ? "bg-emerald-900/50 text-emerald-200 border border-emerald-700"
                         : "bg-red-900/50 text-red-200 border border-red-700"
-                    }`}
+                      }`}
                   >
                     {message.type === "success" ? (
                       <CheckCircle2 className="w-6 h-6" />
@@ -383,7 +382,7 @@ export default function KioskClient({
                       </tr>
                     ) : (
                       packages.map((pkg) => (
-                        <tr 
+                        <tr
                           key={pkg.id}
                           className="border-b border-slate-700/50 hover:bg-slate-700/30 transition"
                         >
@@ -404,9 +403,8 @@ export default function KioskClient({
                           <td className="py-3 pr-4 text-slate-400">{pkg.courierName}</td>
                           <td className="py-3 pr-4">
                             <Badge
-                              className={`text-xs ${
-                                statusColors[pkg.status] || "bg-slate-700 text-slate-200"
-                              }`}
+                              className={`text-xs ${statusColors[pkg.status] || "bg-slate-700 text-slate-200"
+                                }`}
                             >
                               {statusLabels[pkg.status] || pkg.status}
                             </Badge>
@@ -427,174 +425,174 @@ export default function KioskClient({
 
       {/* Package Info Popup Modal */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-3xl bg-slate-800 border-slate-700 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                <Package className="w-6 h-6 text-blue-400" />
-                Informasi Paket
-              </DialogTitle>
-              <DialogDescription className="text-slate-400">
-                Petugas, silakan cek dan ambil paket untuk diserahkan
-              </DialogDescription>
-            </DialogHeader>
+        <DialogContent className="max-w-3xl bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Package className="w-6 h-6 text-blue-400" />
+              Informasi Paket
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Petugas, silakan cek dan ambil paket untuk diserahkan
+            </DialogDescription>
+          </DialogHeader>
 
-            {selectedPackage && (
-              <div className="grid grid-cols-2 gap-4 py-4">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  {/* Receipt Number - Prominent */}
-                  <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-700 text-center">
-                    <div className="text-sm text-slate-400 mb-1">Nomor Resi</div>
-                    <div className="text-2xl font-bold text-blue-300">
-                      {selectedPackage.receiptNumber}
-                    </div>
-                  </div>
-
-                  {/* Customer Info */}
-                  <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 space-y-3">
-                    <div className="flex items-center gap-2 text-slate-400 text-sm font-medium mb-2">
-                      <User className="w-4 h-4" />
-                      Penerima
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold">{selectedPackage.userName}</div>
-                      <div className="text-sm text-slate-400">{selectedPackage.userPhone}</div>
-                    </div>
-                    <div className="flex items-center gap-2 pt-2 border-t border-slate-700">
-                      <MapPin className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm">
-                        {selectedPackage.locationName} - Unit {selectedPackage.userUnit}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm">Kurir: {selectedPackage.courierName}</span>
-                    </div>
+          {selectedPackage && (
+            <div className="grid grid-cols-2 gap-4 py-4">
+              {/* Left Column */}
+              <div className="space-y-4">
+                {/* Receipt Number - Prominent */}
+                <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-700 text-center">
+                  <div className="text-sm text-slate-400 mb-1">Nomor Resi</div>
+                  <div className="text-2xl font-bold text-blue-300">
+                    {selectedPackage.receiptNumber}
                   </div>
                 </div>
 
-                {/* Right Column */}
-                <div className="space-y-4">
-                  {/* Payment Info */}
-                  <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 space-y-2">
-                    <div className="flex items-center gap-2 text-slate-400 text-sm font-medium mb-2">
-                      <DollarSign className="w-4 h-4" />
-                      Detail Pembayaran
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">Harga Dasar</span>
-                      <span className="font-medium">{formatMoney(selectedPackage.basePrice)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">Denda</span>
-                      <span className="font-medium">{formatMoney(selectedPackage.penaltyFee)}</span>
-                    </div>
-                    <div className="flex justify-between pt-2 border-t border-slate-700">
-                      <span className="font-bold">Total</span>
-                      <span className="text-xl font-bold text-blue-400">
-                        {formatMoney(String(totalPrice))}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-sm text-slate-400">Status Bayar</span>
-                      <Badge
-                        variant={isPaid ? "default" : "secondary"}
-                        className={isPaid ? "bg-emerald-600" : "bg-amber-600"}
-                      >
-                        {isPaid ? "✓ Lunas" : "⚠ Belum Bayar"}
-                      </Badge>
-                    </div>
+                {/* Customer Info */}
+                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 space-y-3">
+                  <div className="flex items-center gap-2 text-slate-400 text-sm font-medium mb-2">
+                    <User className="w-4 h-4" />
+                    Penerima
                   </div>
-
-                  {/* Warning if not paid */}
-                  {!isPaid && (
-                    <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3 flex items-start gap-3">
-                      <XCircle className="w-5 h-5 text-amber-400 mt-0.5" />
-                      <div className="text-sm">
-                        <div className="font-semibold text-amber-200 mb-1">
-                          Pembayaran Belum Lunas
-                        </div>
-                        <div className="text-amber-300">
-                          Minta customer melunasi pembayaran terlebih dahulu sebelum paket diserahkan.
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <div>
+                    <div className="text-lg font-semibold">{selectedPackage.userName}</div>
+                    <div className="text-sm text-slate-400">{selectedPackage.userPhone}</div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-700">
+                    <MapPin className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm">
+                      {selectedPackage.locationName} - Unit {selectedPackage.userUnit}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Package className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm">Kurir: {selectedPackage.courierName}</span>
+                  </div>
                 </div>
               </div>
-            )}
 
-            <DialogFooter className="gap-2">
+              {/* Right Column */}
+              <div className="space-y-4">
+                {/* Payment Info */}
+                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700 space-y-2">
+                  <div className="flex items-center gap-2 text-slate-400 text-sm font-medium mb-2">
+                    <DollarSign className="w-4 h-4" />
+                    Detail Pembayaran
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Harga Dasar</span>
+                    <span className="font-medium">{formatMoney(selectedPackage.basePrice)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Denda</span>
+                    <span className="font-medium">{formatMoney(selectedPackage.penaltyFee)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-slate-700">
+                    <span className="font-bold">Total</span>
+                    <span className="text-xl font-bold text-blue-400">
+                      {formatMoney(String(totalPrice))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2">
+                    <span className="text-sm text-slate-400">Status Bayar</span>
+                    <Badge
+                      variant={isPaid ? "default" : "secondary"}
+                      className={isPaid ? "bg-emerald-600" : "bg-amber-600"}
+                    >
+                      {isPaid ? "✓ Lunas" : "⚠ Belum Bayar"}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Warning if not paid */}
+                {!isPaid && (
+                  <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3 flex items-start gap-3">
+                    <XCircle className="w-5 h-5 text-amber-400 mt-0.5" />
+                    <div className="text-sm">
+                      <div className="font-semibold text-amber-200 mb-1">
+                        Pembayaran Belum Lunas
+                      </div>
+                      <div className="text-amber-300">
+                        Minta customer melunasi pembayaran terlebih dahulu sebelum paket diserahkan.
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={isSubmitting}
+              className="border-slate-600 hover:bg-slate-700"
+            >
+              Batal
+            </Button>
+
+            {!isPaid && (
               <Button
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
+                onClick={handleMarkAsPaid}
                 disabled={isSubmitting}
-                className="border-slate-600 hover:bg-slate-700"
-              >
-                Batal
-              </Button>
-              
-              {!isPaid && (
-                <Button
-                  onClick={handleMarkAsPaid}
-                  disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Proses...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" />
-                      Sudah Dibayar
-                    </span>
-                  )}
-                </Button>
-              )}
-              
-              {!isPaid && selectedPackage?.status !== "COMPLETED" && (
-                <Button
-                  onClick={handleDestroy}
-                  disabled={isSubmitting}
-                  className="bg-red-600 hover:bg-red-700 disabled:bg-slate-600"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Proses...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4" />
-                      Musnahkan
-                    </span>
-                  )}
-                </Button>
-              )}
-              
-              <Button
-                onClick={handleHandover}
-                disabled={isSubmitting || !isPaid}
-                size="lg"
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600"
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Memproses...
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Proses...
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <PackageCheck className="w-5 h-5" />
-                    Serahkan Paket
+                    <DollarSign className="w-4 h-4" />
+                    Sudah Dibayar
                   </span>
                 )}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            )}
+
+            {!isPaid && selectedPackage?.status !== "COMPLETED" && (
+              <Button
+                onClick={handleDestroy}
+                disabled={isSubmitting}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-slate-600"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Proses...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <XCircle className="w-4 h-4" />
+                    Musnahkan
+                  </span>
+                )}
+              </Button>
+            )}
+
+            <Button
+              onClick={handleHandover}
+              disabled={isSubmitting || !isPaid}
+              size="lg"
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Memproses...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <PackageCheck className="w-5 h-5" />
+                  Serahkan Paket
+                </span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
