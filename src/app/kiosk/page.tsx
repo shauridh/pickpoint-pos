@@ -11,7 +11,7 @@ export default async function KioskPage() {
     },
   });
 
-  const serialized = recentPackages.map((pkg) => ({
+  const serialized = recentPackages.map((pkg: typeof recentPackages[number]) => ({
     id: pkg.id,
     receiptNumber: pkg.receiptNumber,
     courierName: pkg.courierName,
