@@ -113,7 +113,8 @@ export async function registerUser(data: {
 }
 
 export async function logoutUser() {
-  const cookieStore = await require("next/headers").cookies();
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
   cookieStore.delete("pickpoint_session");
   return { success: true };
 }
