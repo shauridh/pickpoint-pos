@@ -1,4 +1,3 @@
-// @ts-expect-error Next.js server can import client component from same route folder
 import MobileDropClient from "./MobileDropClient";
 import { prisma } from "@/lib/prisma";
 
