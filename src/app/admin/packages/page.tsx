@@ -11,7 +11,8 @@ export default async function AdminPackagesPage() {
     },
   });
 
-  const serialized = packages.map((pkg) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serialized = packages.map((pkg: any) => ({
     id: pkg.id,
     receiptNumber: pkg.receiptNumber,
     courierName: pkg.courierName,

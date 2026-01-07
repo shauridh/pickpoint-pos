@@ -48,7 +48,8 @@ export default async function AdminHomePage() {
     totalLocations,
   };
 
-  const packages = recentPackages.map((pkg) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const packages = recentPackages.map((pkg: any) => ({
     id: pkg.id,
     receiptNumber: pkg.receiptNumber,
     courierName: pkg.courierName,

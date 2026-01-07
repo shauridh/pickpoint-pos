@@ -7,7 +7,8 @@ export default async function AdminLocationsPage() {
     orderBy: { name: "asc" },
   });
 
-  const serialized = locations.map((loc) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serialized = locations.map((loc: any) => ({
     id: loc.id,
     name: loc.name,
     dropSlug: loc.dropSlug,

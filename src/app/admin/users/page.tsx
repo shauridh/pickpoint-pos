@@ -27,7 +27,8 @@ export default async function AdminUsersPage() {
     select: { id: true, name: true },
   });
 
-  const serialized = users.map((u) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serialized = users.map((u: any) => ({
     id: u.id,
     name: u.name,
     phone: u.phone,
@@ -37,7 +38,8 @@ export default async function AdminUsersPage() {
     createdAt: u.createdAt.toISOString(),
   }));
 
-  const serializedLocations = locations.map((loc) => ({ id: loc.id, name: loc.name }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serializedLocations = locations.map((loc: any) => ({ id: loc.id, name: loc.name }));
 
   return <UsersClient users={serialized} locations={serializedLocations} />;
 }
