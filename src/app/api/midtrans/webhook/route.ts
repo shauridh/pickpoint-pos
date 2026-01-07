@@ -50,13 +50,13 @@ export async function POST(request: NextRequest) {
             phone: true,
           },
         },
-        package: {
+        relatedPackage: {
           select: {
             id: true,
             receiptNumber: true,
           },
         },
-        membershipPlan: {
+        relatedPlan: {
           select: {
             durationInDays: true,
           },
@@ -115,9 +115,7 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        console.log(`Package ${transaction.package?.receiptNumber} marked as paid`);
-
-        console.log(`Package ${transaction.package?.receiptNumber} marked as paid`);
+        console.log(`Package ${transaction.relatedPackage?.receiptNumber} marked as paid`);
       } else if (transaction.type === "MEMBERSHIP_BUY" && transaction.relatedPlanId) {
         // Update user membership
         const currentUser = await prisma.user.findUnique({
@@ -131,7 +129,7 @@ export async function POST(request: NextRequest) {
           : now;
 
         const newExpiryDate = new Date(baseDate);
-        newExpiryDate.setDate(newExpiryDate.getDate() + (transaction.membershipPlan?.durationInDays || 30));
+        newExpiryDate.setDate(newExpiryDate.getDate() + (transaction.relatedPlan?.durationInDays || 30));
 
         await prisma.user.update({
           where: { id: transaction.userId },
