@@ -10,8 +10,9 @@ export async function GET(req: NextRequest) {
     });
 
     // Convert Decimal to string for JSON serialization
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return NextResponse.json(
-      plans.map((plan) => ({
+      plans.map((plan: any) => ({
         ...plan,
         price: plan.price.toString(),
       }))
