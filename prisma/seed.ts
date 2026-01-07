@@ -30,16 +30,40 @@ async function main() {
 
   // Locations
   const locations = [
-    { name: "Apartemen A", price: new Prisma.Decimal(5000) },
-    { name: "Apartemen B", price: new Prisma.Decimal(7000) },
-    { name: "Apartemen C", price: new Prisma.Decimal(9000) },
+    {
+      name: "Apartemen A",
+      dropSlug: "apartemen-a",
+      price: new Prisma.Decimal(5000),
+      pricingScheme: "FLAT" as const,
+      priceConfig: { flatPrice: 5000 }
+    },
+    {
+      name: "Apartemen B",
+      dropSlug: "apartemen-b",
+      price: new Prisma.Decimal(7000),
+      pricingScheme: "FLAT" as const,
+      priceConfig: { flatPrice: 7000 }
+    },
+    {
+      name: "Apartemen C",
+      dropSlug: "apartemen-c",
+      price: new Prisma.Decimal(9000),
+      pricingScheme: "FLAT" as const,
+      priceConfig: { flatPrice: 9000 }
+    },
   ];
 
   for (const loc of locations) {
     await prisma.location.upsert({
       where: { name: loc.name },
-      update: { price: loc.price },
-      create: { name: loc.name, price: loc.price },
+      update: { price: loc.price, priceConfig: loc.priceConfig },
+      create: {
+        name: loc.name,
+        dropSlug: loc.dropSlug,
+        price: loc.price,
+        pricingScheme: loc.pricingScheme,
+        priceConfig: loc.priceConfig
+      },
     });
   }
 
