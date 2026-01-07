@@ -1,0 +1,63 @@
+# ============================================
+# VERCEL ENVIRONMENT VARIABLES
+# ============================================
+# Copy semua baris di bawah ini ke Vercel Dashboard
+# Settings > Environment Variables
+# Pilih: Production, Preview, Development (centang semua)
+# ============================================
+
+# DATABASE (WAJIB - Sudah diisi dengan Supabase Anda)
+DATABASE_URL=postgresql://postgres.emucobrjevodnbhxhhub:M0y14oE54Rype6Uj@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+# SESSION SECRET (WAJIB - Generate baru dengan: openssl rand -base64 32)
+SESSION_SECRET=GANTI_DENGAN_HASIL_OPENSSL_RAND_BASE64_32
+
+# VAPID KEYS untuk Push Notifications (Generate dengan: npx web-push generate-vapid-keys)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=GANTI_DENGAN_VAPID_PUBLIC_KEY
+VAPID_PRIVATE_KEY=GANTI_DENGAN_VAPID_PRIVATE_KEY
+VAPID_SUBJECT=mailto:your-email@example.com
+
+# MIDTRANS Payment Gateway (Sandbox untuk testing)
+MIDTRANS_SERVER_KEY=GANTI_DENGAN_MIDTRANS_SERVER_KEY
+MIDTRANS_CLIENT_KEY=GANTI_DENGAN_MIDTRANS_CLIENT_KEY
+MIDTRANS_IS_PRODUCTION=false
+NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=GANTI_DENGAN_MIDTRANS_CLIENT_KEY
+
+# WHATSAPP Gateway (Sudah diisi dengan GetSender.id Anda)
+WHATSAPP_API_URL=https://seen.getsender.id/send-message
+WHATSAPP_API_KEY=yBMXcDk5iWz9MdEmyu8eBH2uhcytui
+WHATSAPP_SENDER=6285777875132
+
+# COURIER API (Generate dengan: openssl rand -hex 32)
+COURIER_API_KEY=GANTI_DENGAN_HASIL_OPENSSL_RAND_HEX_32
+
+# APP URL (Ganti setelah deploy, atau biarkan kosong dulu)
+NEXT_PUBLIC_APP_URL=https://your-app-name.vercel.app
+
+# ============================================
+# CARA MENGISI DI VERCEL:
+# ============================================
+# 1. Buka Vercel Dashboard > Your Project > Settings > Environment Variables
+# 2. Untuk setiap variable di atas:
+#    - Key: Nama variable (contoh: DATABASE_URL)
+#    - Value: Nilai setelah tanda = (contoh: postgresql://...)
+#    - Environment: Centang Production, Preview, Development
+# 3. Klik "Save"
+# 4. Ulangi untuk semua variable
+# 5. Redeploy project (Deployments > ... > Redeploy)
+# ============================================
+
+# ============================================
+# GENERATE SECRETS:
+# ============================================
+# Jalankan di terminal lokal:
+#
+# 1. Session Secret:
+#    openssl rand -base64 32
+#
+# 2. VAPID Keys:
+#    npx web-push generate-vapid-keys
+#
+# 3. Courier API Key:
+#    openssl rand -hex 32
+# ============================================

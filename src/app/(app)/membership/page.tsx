@@ -178,7 +178,7 @@ export default function MembershipPage() {
                     Rp{" "}
                     {typeof plan.price === "string"
                       ? parseInt(plan.price).toLocaleString("id-ID")
-                      : plan.price.toLocaleString("id-ID")}
+                      : Number(plan.price).toLocaleString("id-ID")}
                   </p>
                 </div>
 
@@ -225,8 +225,8 @@ export default function MembershipPage() {
                               Rp{" "}
                               {typeof plan.price === "string"
                                 ? parseInt(plan.price).toLocaleString(
-                                    "id-ID"
-                                  )
+                                  "id-ID"
+                                )
                                 : plan.price.toLocaleString("id-ID")}
                             </span>
                           </div>

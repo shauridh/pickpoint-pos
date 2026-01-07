@@ -257,7 +257,7 @@ export default function DashboardPage() {
               <Bell className="w-4 h-4" />
             </Button>
             <Button variant="outline" size="icon" asChild title="Profil">
-              <Link href="/profile" ref={profileRef}>
+              <Link href="/profile">
                 <User className="w-4 h-4" />
               </Link>
             </Button>
