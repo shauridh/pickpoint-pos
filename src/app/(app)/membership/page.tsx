@@ -227,7 +227,7 @@ export default function MembershipPage() {
                                 ? parseInt(plan.price).toLocaleString(
                                   "id-ID"
                                 )
-                                : plan.price.toLocaleString("id-ID")}
+                                : Number(plan.price).toLocaleString("id-ID")}
                             </span>
                           </div>
                           <div className="flex justify-between text-sm border-t pt-2">
