@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { PricingScheme } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth";
 
@@ -141,7 +142,7 @@ export async function createLocation(data: {
     }
 
     // Default values for legacy support
-    const pricingScheme = data.pricingScheme || "FLAT";
+    const pricingScheme = (data.pricingScheme as PricingScheme) || PricingScheme.FLAT;
     const gracePeriodDays = data.gracePeriodDays ?? 0;
     const priceConfig = data.priceConfig || { basePrice: data.price || 5000, penaltyPer24h: 3000 };
     const deliveryEnabled = data.deliveryEnabled ?? false;
@@ -204,7 +205,7 @@ export async function updateLocation(
     }
 
     // Default values
-    const pricingScheme = data.pricingScheme || "FLAT";
+    const pricingScheme = (data.pricingScheme as PricingScheme) || PricingScheme.FLAT;
     const gracePeriodDays = data.gracePeriodDays ?? 0;
     const priceConfig = data.priceConfig || { basePrice: data.price || 5000, penaltyPer24h: 3000 };
     const deliveryEnabled = data.deliveryEnabled ?? false;
