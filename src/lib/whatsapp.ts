@@ -29,12 +29,13 @@ export async function sendWhatsAppMessage(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${WHATSAPP_API_KEY}`,
       },
       body: JSON.stringify({
+        api_key: WHATSAPP_API_KEY,
         sender: WHATSAPP_SENDER,
         number: params.to,
         message: params.message,
+        // footer: "sent via app", // opsional
       }),
     });
 

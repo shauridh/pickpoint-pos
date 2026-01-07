@@ -23,7 +23,7 @@ async function testWhatsAppNotifications() {
     console.log("🧪 Testing WhatsApp Notifications...\n");
 
     // Ganti dengan nomor HP test kamu (format: 628xxx)
-    const TEST_PHONE = "6281234567890"; // GANTI INI!
+    const TEST_PHONE = "6282111080802"; // GANTI INI!
     const TEST_NAME = "Budi Santoso";
     const TEST_RESI = "JNE123456789";
     const TEST_LOCATION = "Apartemen Sudirman";
