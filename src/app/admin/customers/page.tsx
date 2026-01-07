@@ -17,7 +17,8 @@ export default async function AdminCustomersPage() {
     },
   });
 
-  const serialized = customers.map((c) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serialized = customers.map((c: any) => ({
     id: c.id,
     name: c.name,
     phone: c.phone,
@@ -34,7 +35,8 @@ export default async function AdminCustomersPage() {
     select: { id: true, name: true },
   });
 
-  const serializedLocations = locations.map((l) => ({ id: l.id, name: l.name }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const serializedLocations = locations.map((l: any) => ({ id: l.id, name: l.name }));
 
   return <CustomersClient customers={serialized} locations={serializedLocations} />;
 }
