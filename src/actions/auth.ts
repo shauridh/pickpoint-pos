@@ -118,3 +118,33 @@ export async function logoutUser() {
   cookieStore.delete("pickpoint_session");
   return { success: true };
 }
+
+export async function loginAdmin(username: string, password: string) {
+  try {
+    // Cari user dengan username dan role ADMIN/STAFF
+    const user = await prisma.user.findFirst({
+      where: {
+        username,
+        role: { in: ["ADMIN", "STAFF"] },
+      },
+    });
+    if (!user) {
+      return { success: false, message: "User admin/staff tidak ditemukan" };
+    }
+    // Cek password
+    const passMatch = user.pin ? await bcrypt.compare(password, user.pin) : false;
+    if (!passMatch) {
+      return { success: false, message: "Password salah" };
+    }
+    await setSession({
+      userId: user.id,
+      phone: user.phone,
+      name: user.name,
+      isLoggedIn: true,
+    });
+    return { success: true, message: "Login admin/staff berhasil", userId: user.id };
+  } catch (error) {
+    console.error("Login admin error:", error);
+    return { success: false, message: "Terjadi kesalahan" };
+  }
+}

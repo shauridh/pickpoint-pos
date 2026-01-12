@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type LoginStep = "phone" | "pin" | "register";
 
@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [isNewUser, setIsNewUser] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const savedPhone = localStorage.getItem("savedPhone");
@@ -30,6 +31,15 @@ export default function LoginPage() {
       setRememberMe(true);
     }
   }, []);
+
+  useEffect(() => {
+    const phoneParam = searchParams.get("phone");
+    if (phoneParam) {
+      const formatted = phoneParam.replace(/\s+/g, "");
+      setPhone(formatPhone(formatted));
+      setRememberMe(true);
+    }
+  }, [searchParams]);
 
   const formatPhone = (value: string) => {
     let cleaned = value.replace(/\D/g, "");
@@ -125,9 +135,12 @@ export default function LoginPage() {
       if (result.success) {
         toast({
           title: "Sukses",
-          description: result.message,
+          description: result.message + ". Silakan login dengan PIN yang baru dibuat.",
         });
-        router.push("/dashboard");
+        // Setelah register, arahkan ke step PIN dan isi otomatis PIN
+        setStep("pin");
+        setIsNewUser(false);
+        // PIN tetap diisi agar user tinggal klik login
       } else {
         toast({
           title: "Error",
@@ -168,7 +181,15 @@ export default function LoginPage() {
           title: "Sukses",
           description: result.message,
         });
-        router.push("/dashboard");
+        // Ambil role user setelah login
+        const profileRes = await fetch("/api/profile");
+        const profileData = await profileRes.json();
+        const role = profileData.user?.role || "CUSTOMER";
+        if (role === "ADMIN" || role === "STAFF") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         toast({
           title: "Error",

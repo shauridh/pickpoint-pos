@@ -1,8 +1,18 @@
-import { IronSessionOptions } from "iron-session";
+import { SessionOptions } from "iron-session";
 
-export const sessionOptions: IronSessionOptions = {
+const rawPassword = process.env.SESSION_SECRET || "";
+const fallbackPassword = "dev_fallback_session_secret_32_chars_min__";
+const password = rawPassword.length >= 32 ? rawPassword : fallbackPassword;
+
+if (rawPassword.length < 32) {
+  console.warn(
+    "SESSION_SECRET is missing or shorter than 32 characters; using dev fallback. Update .env.local to avoid this in production."
+  );
+}
+
+export const sessionOptions: SessionOptions = {
   cookieName: "pickpoint_session",
-  password: process.env.SESSION_SECRET!,
+  password,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,

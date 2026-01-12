@@ -18,8 +18,11 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
+        username: true,
         phone: true,
-        unitNumber: true,
+        unit: true,
+        apartmentName: true,
+        role: true,
       },
     });
 
@@ -30,7 +33,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ user });
+    return NextResponse.json({
+      user: user
+        ? {
+            ...user,
+            unitNumber: user.unit,
+          }
+        : null,
+    });
   } catch (error) {
     console.error("Profile API error:", error);
     return NextResponse.json(

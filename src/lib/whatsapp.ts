@@ -82,12 +82,13 @@ export async function notifyPackageArrivalWhatsApp(
   name: string,
   receiptNumber: string,
   locationName: string
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const formattedPhone = formatWhatsAppNumber(phone);
-  const link = `${process.env.NEXT_PUBLIC_APP_URL || "https://pickpoint.my.id"}/dashboard`;
-  const message = `HI ${name}, \n\nPaket anda ${receiptNumber} sudah dapat diambil di Pickpoint ${locationName}.\n\nUntuk detail informasi dapat mebuka link berikut ${link}`;
+  const appBase = process.env.NEXT_PUBLIC_APP_URL || "https://pickpoint.my.id";
+  const link = `${appBase}/login?phone=${encodeURIComponent(formattedPhone)}&from=wa-package`;
+  const message = `HI ${name}, \n\nPaket anda ${receiptNumber} sudah dapat diambil di Pickpoint ${locationName}.\n\nBuka tautan berikut untuk cek detail atau daftar tanpa login manual: ${link}`;
 
-  await sendWhatsAppMessage({
+  return await sendWhatsAppMessage({
     to: formattedPhone,
     message,
   });
@@ -100,7 +101,7 @@ export async function notifyMembershipSuccessWhatsApp(
   phone: string,
   name: string,
   expiryDate: Date
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const formattedPhone = formatWhatsAppNumber(phone);
   const formattedDate = expiryDate.toLocaleDateString("id-ID", {
     year: "numeric",
@@ -110,7 +111,7 @@ export async function notifyMembershipSuccessWhatsApp(
 
   const message = `Halo ${name},\n\npembayaran membership anda berhasil! Masa aktif member anda telah diperpanjang hingga ${formattedDate}. Terima kasih!`;
 
-  await sendWhatsAppMessage({
+  return await sendWhatsAppMessage({
     to: formattedPhone,
     message,
   });
@@ -123,7 +124,7 @@ export async function notifyMembershipReminderWhatsApp(
   phone: string,
   name: string,
   expiryDate: Date
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const formattedPhone = formatWhatsAppNumber(phone);
   const formattedDate = expiryDate.toLocaleDateString("id-ID", {
     year: "numeric",
@@ -133,7 +134,7 @@ export async function notifyMembershipReminderWhatsApp(
 
   const message = `Halo ${name},\n\nmasa aktif membership anda akan segera berakhir pada ${formattedDate}. Segera lakukan perpanjangan untuk tetap menikmati layanan kami.`;
 
-  await sendWhatsAppMessage({
+  return await sendWhatsAppMessage({
     to: formattedPhone,
     message,
   });
@@ -148,13 +149,13 @@ export async function sendPaymentReminderWhatsApp(
   receiptNumber: string,
   amount: number,
   daysOverdue: number
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const formattedPhone = formatWhatsAppNumber(phone);
   const message = `Halo ${name},\n\n⏰ Reminder: Paket dengan resi ${receiptNumber} memiliki tagihan sebesar Rp ${amount.toLocaleString(
     "id-ID"
   )}.\n\nPaket sudah ${daysOverdue} hari di tempat kami. Mohon segera lakukan pembayaran.\n\nTerima kasih,\nPickPoint`;
 
-  await sendWhatsAppMessage({
+  return await sendWhatsAppMessage({
     to: formattedPhone,
     message,
   });

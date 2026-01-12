@@ -13,6 +13,7 @@ import {
   X
 } from "lucide-react";
 import { ReactNode, useState } from "react";
+import { AdminGuard } from "./AdminGuard";
 
 const menuItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -23,7 +24,7 @@ const menuItems = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+function AdminLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -121,5 +122,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  return (
+    <AdminGuard>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </AdminGuard>
   );
 }

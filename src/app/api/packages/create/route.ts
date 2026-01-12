@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { notifyPackageArrival } from "@/lib/webpush";
 import { notifyPackageArrivalWhatsApp } from "@/lib/whatsapp";
@@ -117,6 +118,17 @@ export async function POST(request: NextRequest) {
       package: pkg,
     });
   } catch (error) {
+    // Handle duplicate receipt number gracefully
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Nomor resi sudah terdaftar. Gunakan nomor lain." },
+        { status: 409 }
+      );
+    }
+
     console.error("Package creation error:", error);
     return NextResponse.json(
       { error: "Failed to create package" },

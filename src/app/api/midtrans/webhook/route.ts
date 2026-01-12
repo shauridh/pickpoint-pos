@@ -4,6 +4,9 @@ import { verifySignature } from "@/lib/midtrans";
 import { notifyMembershipSuccess } from "@/lib/webpush";
 import { notifyMembershipSuccessWhatsApp } from "@/lib/whatsapp";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -100,7 +103,6 @@ export async function POST(request: NextRequest) {
         where: { id: order_id },
         data: {
           status: "PAID",
-          paidAt: new Date(),
         },
       });
 

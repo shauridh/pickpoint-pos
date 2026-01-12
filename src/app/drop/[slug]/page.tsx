@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, use, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, X, MapPin, Scan } from "lucide-react";
-import { CameraCapture } from "@/components/CameraCapture";
+import { Card, CardContent } from "@/components/ui/card";
+import { Package, MapPin, Scan, X } from "lucide-react";
+import { KioskWebcam } from "@/components/KioskWebcam";
+import type { ResiScannerProps } from "@/components/ResiScanner";
 
 type FormStep = "form" | "success" | "thankyou";
 
@@ -27,6 +29,18 @@ const couriers = [
   { id: "ninja", name: "Ninja Xpress" },
   { id: "spx", name: "SPX" },
 ];
+
+const ResiScanner = dynamic<ResiScannerProps>(
+  () => import("@/components/ResiScanner").then((mod) => mod.ResiScanner),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 text-white text-sm">
+        Menyiapkan kamera...
+      </div>
+    ),
+  }
+);
 
 // Display helper: slug to readable location name
 const formatLocationName = (slug: string) => {
@@ -79,6 +93,7 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
   const recipientInputRef = useRef<HTMLInputElement>(null);
   const courierInputRef = useRef<HTMLInputElement>(null);
   const resiInputRef = useRef<HTMLInputElement>(null);
+  const scannerFocusReadyRef = useRef(false);
 
   // Fetch location's pricing scheme on mount
   useEffect(() => {
@@ -96,9 +111,14 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
     fetchLocationScheme();
   }, [locationSlug]);
 
-  // Auto-focus scanner input when scanner mode is activated
+  // Refocus manual input after keluar dari mode scanner
   useEffect(() => {
-    if (scannerMode && resiInputRef.current) {
+    if (!scannerFocusReadyRef.current) {
+      scannerFocusReadyRef.current = true;
+      return;
+    }
+
+    if (!scannerMode && resiInputRef.current) {
       resiInputRef.current.focus();
     }
   }, [scannerMode]);
@@ -156,9 +176,11 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
     
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/packages/create", {
+      const response = await fetch("/api/drop/packages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ ...formData, locationSlug }),
       });
 
@@ -264,6 +286,18 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
   // Form screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+      {scannerMode && (
+        <ResiScanner
+          onDetected={(value) =>
+            setFormData((prev) => ({
+              ...prev,
+              receiptNumber: value,
+            }))
+          }
+          onClose={() => setScannerMode(false)}
+          helperText="Pastikan label barcode berada di tengah garis bantu"
+        />
+      )}
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="mb-3 flex items-center gap-2">
@@ -325,12 +359,7 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-sm font-semibold">No. Resi</label>
                     <button
-                      onClick={() => {
-                        setScannerMode(!scannerMode);
-                        if (!scannerMode) {
-                          setTimeout(() => resiInputRef.current?.focus(), 100);
-                        }
-                      }}
+                      onClick={() => setScannerMode((prev) => !prev)}
                       className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
                       type="button"
                     >
@@ -339,39 +368,27 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
                     </button>
                   </div>
                   {scannerMode ? (
-                    <div className="border-2 border-blue-400 rounded-lg p-4 bg-blue-50">
-                      <div className="flex items-center justify-center gap-2 mb-3">
-                        <Scan className="w-5 h-5 text-blue-600 animate-pulse" />
-                        <p className="text-sm font-semibold text-blue-700">Scanner Aktif</p>
+                    <div className="space-y-3 rounded-xl border-2 border-blue-400 bg-blue-50 p-4">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
+                        <Scan className="h-4 w-4 animate-pulse" />
+                        <span>Scanner kamera aktif</span>
                       </div>
-                      <p className="text-xs text-blue-600 mb-3 text-center">
-                        Arahkan scanner ke barcode atau scan QR resi
+                      <p className="text-xs text-blue-600">
+                        Kamera sedang terbuka penuh. Arahkan barcode ke kotak panduan dan tunggu hingga terbaca otomatis.
                       </p>
-                      <input
-                        ref={resiInputRef}
-                        type="text"
-                        placeholder="Tekan disini lalu scan..."
-                        value={formData.receiptNumber}
-                        onChange={(e) => {
-                          const value = e.target.value.trim();
-                          setFormData({ ...formData, receiptNumber: value });
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            setScannerMode(false);
-                          }
-                        }}
-                        autoFocus
-                        className="w-full h-12 text-base font-mono border-2 border-blue-400 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      />
                       {formData.receiptNumber && (
-                        <div className="mt-2 p-2 bg-green-50 border border-green-300 rounded text-center">
-                          <p className="text-xs text-green-700 font-semibold">
-                            ✓ Terdeteksi: {formData.receiptNumber}
-                          </p>
+                        <div className="rounded-lg border border-blue-200 bg-white p-2 text-center font-mono text-sm text-blue-700">
+                          Terbaca: {formData.receiptNumber}
                         </div>
                       )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setScannerMode(false)}
+                        className="w-full border-blue-300 text-blue-700 hover:bg-blue-100"
+                      >
+                        Matikan Scanner
+                      </Button>
                     </div>
                   ) : (
                     <Input
@@ -512,11 +529,13 @@ export default function DropOffPage({ params }: { params: Promise<{ slug: string
                     ← Kembali
                   </Button>
                 </div>
-                <CameraCapture
-                  onCapture={(url) => {
+                <KioskWebcam
+                  instruction="Pastikan label resi dan kondisi paket terlihat jelas"
+                  onUpload={(url) => {
                     setFormData({ ...formData, photoUrl: url });
                     setPhotoMode(false);
                   }}
+                  onCancel={() => setPhotoMode(false)}
                 />
               </div>
             )}

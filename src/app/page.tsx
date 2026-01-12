@@ -20,7 +20,7 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/admin/dashboard"
+                href="/admin-login"
                 className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-3 font-semibold text-slate-900 shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 transition"
               >
                 Mulai dari Admin
@@ -67,13 +67,13 @@ export default function Home() {
                     icon: <CreditCard className="h-5 w-5 text-amber-300" />,
                     title: "Midtrans Payment",
                     desc: "Snap token + webhook untuk paket & membership.",
-                    link: "/admin/dashboard",
+                    link: "/admin-login",
                   },
                   {
                     icon: <Bell className="h-5 w-5 text-sky-300" />,
                     title: "Dual Notif",
                     desc: "Push & WhatsApp terkirim bersamaan.",
-                    link: "/admin/settings",
+                    link: "/admin-login",
                   },
                   {
                     icon: <Smartphone className="h-5 w-5 text-rose-300" />,
@@ -109,7 +109,7 @@ export default function Home() {
           </div>
           <div className="flex gap-3">
             <Link
-              href="/admin/settings"
+              href="/admin-login"
               className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow hover:bg-slate-100 transition"
             >
               Atur Notifikasi
