@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import UsersClient from "./UsersClient";
 
+// Force dynamic rendering - this page queries database
+export const dynamic = 'force-dynamic';
+
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
     where: {

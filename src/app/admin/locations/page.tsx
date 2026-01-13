@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import LocationsClient from "./LocationsClient";
 
+// Force dynamic rendering - this page queries database
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLocationsPage() {
   const locations = await prisma.location.findMany({
     where: { isActive: true },

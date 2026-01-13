@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import PackagesClient from "./PackagesClient";
 
+// Force dynamic rendering - this page queries database
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPackagesPage() {
   const packages = await prisma.package.findMany({
     orderBy: { createdAt: "desc" },

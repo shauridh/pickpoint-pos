@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 type LocationRecord = { id: number; name: string; price: any };
 
+// Force dynamic rendering - this page queries database
+export const dynamic = 'force-dynamic';
+
 export default async function AdminMobileDropPage() {
   const locations = await prisma.location.findMany({ orderBy: { name: "asc" } });
   const serializedLocations = locations.map((loc: LocationRecord) => ({
