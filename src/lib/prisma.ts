@@ -4,30 +4,29 @@ import pg from "pg";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// Create connection pool dengan error handling
+// Create connection pool dengan fallback direct URL jika tersedia
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
-  
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is not defined");
+  const useDirect =
+    !!process.env.DIRECT_DATABASE_URL &&
+    (process.env.VERCEL === "1" || process.env.NODE_ENV === "production");
+
+  const rawConnectionString = useDirect
+    ? process.env.DIRECT_DATABASE_URL
+    : process.env.DATABASE_URL;
+
+  if (!rawConnectionString) {
+    throw new Error("DATABASE_URL or DIRECT_DATABASE_URL must be defined");
   }
 
-  // Remove sslmode from URL if exists (we'll set it via ssl config)
-  const url = new URL(connectionString);
+  const url = new URL(rawConnectionString);
   url.searchParams.delete("sslmode");
-  
-  // Configure SSL based on environment
-  let sslConfig: boolean | { rejectUnauthorized: boolean } = false;
-  
-  if (process.env.NODE_ENV === "production") {
-    // For Supabase pooler, we need to accept self-signed certificates
-    sslConfig = { rejectUnauthorized: false };
-  }
 
-  const pool = new pg.Pool({ 
+  const pool = new pg.Pool({
     connectionString: url.toString(),
     max: process.env.VERCEL ? 1 : 10,
-    ssl: sslConfig,
+    ssl: process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
     connectionTimeoutMillis: 10000,
     idleTimeoutMillis: 30000,
   });
