@@ -12,6 +12,7 @@
     "db:migrate:deploy": "node scripts/run-migrate.js",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
+    "db:create-admin": "node scripts/create-admin.js",
     "deploy:force": "node scripts/force-deploy.js"
   },
   "dependencies": {
