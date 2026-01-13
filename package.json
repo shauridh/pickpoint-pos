@@ -5,11 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "prebuild": "node scripts/run-migrate.js",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev --name init",
+    "db:migrate:deploy": "node scripts/run-migrate.js",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts"
   },
