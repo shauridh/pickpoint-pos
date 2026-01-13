@@ -9,10 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // Use direct connection for migrations (avoid PgBouncer), fallback to pooler if not set
-    url: process.env["DIRECT_DATABASE_URL"] ?? process.env["DATABASE_URL"],
-  },
-  clientOutput: {
-    connectionString: process.env["DATABASE_URL"], // Runtime uses pooler
+    url: process.env["DATABASE_URL"],
   },
 });
