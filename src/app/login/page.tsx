@@ -25,19 +25,23 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const savedPhone = localStorage.getItem("savedPhone");
-    if (savedPhone) {
-      setPhone(savedPhone);
-      setRememberMe(true);
+    if (typeof window !== 'undefined') {
+      const savedPhone = localStorage.getItem("savedPhone");
+      if (savedPhone) {
+        setPhone(savedPhone);
+        setRememberMe(true);
+      }
     }
   }, []);
 
   useEffect(() => {
-    const phoneParam = searchParams.get("phone");
-    if (phoneParam) {
-      const formatted = phoneParam.replace(/\s+/g, "");
-      setPhone(formatPhone(formatted));
-      setRememberMe(true);
+    if (typeof window !== 'undefined') {
+      const phoneParam = searchParams.get("phone");
+      if (phoneParam) {
+        const formatted = phoneParam.replace(/\s+/g, "");
+        setPhone(formatPhone(formatted));
+        setRememberMe(true);
+      }
     }
   }, [searchParams]);
 
@@ -63,10 +67,12 @@ export default function LoginPage() {
     const formattedPhone = formatPhone(phone);
     setPhone(formattedPhone);
 
-    if (rememberMe) {
-      localStorage.setItem("savedPhone", formattedPhone);
-    } else {
-      localStorage.removeItem("savedPhone");
+    if (typeof window !== 'undefined') {
+      if (rememberMe) {
+        localStorage.setItem("savedPhone", formattedPhone);
+      } else {
+        localStorage.removeItem("savedPhone");
+      }
     }
 
     setIsLoading(true);
