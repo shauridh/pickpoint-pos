@@ -11,7 +11,8 @@
     "db:migrate": "prisma migrate dev --name init",
     "db:migrate:deploy": "node scripts/run-migrate.js",
     "db:generate": "prisma generate",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "deploy:force": "node scripts/force-deploy.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
