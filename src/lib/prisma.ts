@@ -12,21 +12,22 @@ function createPrismaClient() {
     throw new Error("DATABASE_URL is not defined");
   }
 
-  // Parse connection string untuk modify SSL mode
+  // Remove sslmode from URL if exists (we'll set it via ssl config)
   const url = new URL(connectionString);
+  url.searchParams.delete("sslmode");
   
-  // Untuk production, gunakan direct SSL connection
+  // Configure SSL based on environment
+  let sslConfig: boolean | { rejectUnauthorized: boolean } = false;
+  
   if (process.env.NODE_ENV === "production") {
-    url.searchParams.set("sslmode", "require");
+    // For Supabase pooler, we need to accept self-signed certificates
+    sslConfig = { rejectUnauthorized: false };
   }
 
   const pool = new pg.Pool({ 
     connectionString: url.toString(),
     max: process.env.VERCEL ? 1 : 10,
-    ssl: process.env.NODE_ENV === "production" 
-      ? { rejectUnauthorized: false } 
-      : false,
-    // Add connection timeout
+    ssl: sslConfig,
     connectionTimeoutMillis: 10000,
     idleTimeoutMillis: 30000,
   });
