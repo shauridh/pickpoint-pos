@@ -68,7 +68,7 @@ async function main() {
       gracePeriodDays: 1,
       priceConfig: { day1Price: 5000, day2AndAfterPrice: 3000 },
       deliveryEnabled: false,
-      deliveryPriceConfig: null
+      deliveryPriceConfig: Prisma.JsonNull
     },
   ];
 
