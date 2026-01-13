@@ -79,7 +79,8 @@ export async function notifyPackageArrival(
   receiptNumber: string,
   locationName: string
 ): Promise<void> {
-  const link = `${process.env.NEXT_PUBLIC_APP_URL || "https://pickpoint.my.id"}/dashboard`;
+  const appBase = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://pickpoint.my.id");
+  const link = `${appBase}/dashboard`;
   await sendNotification(userId, {
     title: "📦 Paket Tiba!",
     body: `HI ${name}, Paket anda ${receiptNumber} sudah dapat diambil di Pickpoint ${locationName}. Untuk detail informasi dapat membuka link berikut ${link}`,

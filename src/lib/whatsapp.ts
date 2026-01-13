@@ -84,7 +84,7 @@ export async function notifyPackageArrivalWhatsApp(
   locationName: string
 ): Promise<{ success: boolean; error?: string }> {
   const formattedPhone = formatWhatsAppNumber(phone);
-  const appBase = process.env.NEXT_PUBLIC_APP_URL || "https://pickpoint.my.id";
+  const appBase = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://pickpoint.my.id");
   const link = `${appBase}/login?phone=${encodeURIComponent(formattedPhone)}&from=wa-package`;
   const message = `HI ${name}, \n\nPaket anda ${receiptNumber} sudah dapat diambil di Pickpoint ${locationName}.\n\nBuka tautan berikut untuk cek detail atau daftar tanpa login manual: ${link}`;
 
