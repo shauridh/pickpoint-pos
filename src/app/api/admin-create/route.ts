@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
+    // Test database connection first
+    await prisma.$queryRaw`SELECT 1`;
+    
     const username = "ridhos";
     const password = "080802";
     const hashedPassword = await bcrypt.hash(password, 10);
