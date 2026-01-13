@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
@@ -47,34 +46,30 @@ export async function GET(req: NextRequest) {
         if (pkg.paymentStatus !== "PAID") {
           const location = await prisma.location.findUnique({
             where: { id: pkg.locationId },
-            select: { gracePeriodDays: true, priceConfig: true, pricingScheme: true },
-          }) as any;
+            select: { gracePeriodDays: true, priceConfig: true },
+          });
 
           if (location) {
             const createdDate = new Date(pkg.createdAt);
             const now = new Date();
             const hoursPassed = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60);
-            const gracePeriodHours = (location.gracePeriodDays || 1) * 24;
+            const gracePeriodHours = (location.gracePeriodDays || 0) * 24;
+            const penaltyPer24h = Number((location.priceConfig as any)?.penaltyPer24h || 0);
 
-            if (hoursPassed > gracePeriodHours) {
-              // Calculate penalty
-              let newPenaltyFee = 0;
-              if (location.pricingScheme === "FLAT") {
-                newPenaltyFee = location.priceConfig.penaltyPer24h || 0;
-              } else if (location.pricingScheme === "FLAT_SIZE") {
-                const size = pkg.size as string;
-                newPenaltyFee = location.priceConfig[size]?.penalty || 0;
-              }
-              // Add other schemes as needed, but for now focusing on fixing the crash
+            let newPenaltyFeeNumber = 0;
+            if (hoursPassed > gracePeriodHours && penaltyPer24h > 0) {
+              const hoursOver = hoursPassed - gracePeriodHours;
+              const daysOver = Math.floor(hoursOver / 24);
+              newPenaltyFeeNumber = daysOver > 0 ? daysOver * penaltyPer24h : 0;
+            }
 
-              // Update package if penalty changed
-              if (Number(pkg.penaltyFee) !== Number(newPenaltyFee)) {
-                await prisma.package.update({
-                  where: { id: pkg.id },
-                  data: { penaltyFee: newPenaltyFee },
-                });
-                pkg.penaltyFee = new Prisma.Decimal(newPenaltyFee);
-              }
+            if (Number(pkg.penaltyFee) !== Number(newPenaltyFeeNumber)) {
+              await prisma.package.update({
+                where: { id: pkg.id },
+                data: { penaltyFee: newPenaltyFeeNumber.toString() },
+              });
+              // reflect change in the object for response consistency
+              pkg.penaltyFee = newPenaltyFeeNumber as unknown as typeof pkg.penaltyFee;
             }
           }
         }

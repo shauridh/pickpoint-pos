@@ -193,8 +193,8 @@ export default function DashboardPage() {
       setIsProcessingPayment(false);
     }
   };
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString("id-ID", {
+  const formatDate = (value: string | Date) => {
+    return new Date(value).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -334,94 +334,69 @@ export default function DashboardPage() {
               data.pendingPackages.map((pkg: PackageWithPayment) => (
                 <Card key={pkg.id} className="overflow-hidden hover:shadow-md transition-shadow">
                   <div className="p-6 space-y-4">
-                    <div>
-                      <h3 className="font-semibold text-lg">{pkg.receiptNumber}</h3>
-                      <p className="text-sm text-muted-foreground">{pkg.courierName}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Lokasi</p>
-                        <p className="font-medium">{pkg.location.name}</p>
+                        <h3 className="font-semibold text-lg">{pkg.receiptNumber}</h3>
+                        <p className="text-sm text-muted-foreground">{pkg.courierName}</p>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Diterima</p>
-                        <p className="font-medium flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {formatDate(pkg.createdAt)}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="space-y-1 border-t pt-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Harga Layanan:</span>
-                        <span className="font-semibold">
-                          Rp {Number(pkg.basePrice).toLocaleString("id-ID")}
-                        </span>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Lokasi</p>
+                          <p className="font-medium">{pkg.location.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Diterima</p>
+                          <p className="font-medium flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(pkg.createdAt)}
+                          </p>
+                        </div>
                       </div>
-                      {Number(pkg.penaltyFee) > 0 && (
+
+                      <div className="space-y-1 border-t pt-3">
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Denda Keterlambatan:</span>
-                          <span className="text-destructive font-semibold">
-                            Rp {Number(pkg.penaltyFee).toLocaleString("id-ID")}
+                          <span className="text-muted-foreground">Harga Layanan:</span>
+                          <span className="font-semibold">
+                            Rp {Number(pkg.basePrice).toLocaleString("id-ID")}
                           </span>
                         </div>
-                      )}
-                      <div className="flex justify-between text-sm font-semibold pt-2 border-t">
-                        <span>Total:</span>
-                        <span>
-                          Rp {(Number(pkg.basePrice) + Number(pkg.penaltyFee)).toLocaleString("id-ID")}
-                        </span>
+                        {Number(pkg.penaltyFee) > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Denda Keterlambatan:</span>
+                            <span className="text-destructive font-semibold">
+                              Rp {Number(pkg.penaltyFee).toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-sm font-semibold pt-2 border-t">
+                          <span>Total:</span>
+                          <span>
+                            Rp {(Number(pkg.basePrice) + Number(pkg.penaltyFee)).toLocaleString("id-ID")}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <Badge
-                        variant={
-                          pkg.paymentStatus === "PAID"
-                            ? "default"
-                            : isMemberActive
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <Badge
+                          variant={
+                            pkg.paymentStatus === "PAID"
+                              ? "default"
+                              : isMemberActive
                               ? "secondary"
                               : "destructive"
-                        }
-                      >
-                        {pkg.paymentStatus === "PAID"
-                          ? "✓ Sudah Dibayar"
-                          : isMemberActive
+                          }
+                        >
+                          {pkg.paymentStatus === "PAID"
+                            ? "✓ Sudah Dibayar"
+                            : isMemberActive
                             ? "👑 Member"
                             : "Belum Dibayar"}
-                      </Badge>
-                      {pkg.paymentStatus === "PAID" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            const res = await fetch("/api/packages/pay", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ packageId: pkg.id }),
-                            });
-                            const data = await res.json();
-                            if (data.qrPayload) {
-                              setQrModal({
-                                qrPayload: data.qrPayload,
-                                receiptNumber: pkg.receiptNumber,
-                                isFree: data.isMemberFree || false,
-                              });
-                            }
-                          }}
-                        >
-                          <QrCode className="mr-2 h-4 w-4" />
-                          Tampilkan QR
-                        </Button>
-                      ) : isMemberActive ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            setIsProcessingPayment(true);
-                            try {
+                        </Badge>
+                        {pkg.paymentStatus === "PAID" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
                               const res = await fetch("/api/packages/pay", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
@@ -434,112 +409,137 @@ export default function DashboardPage() {
                                   receiptNumber: pkg.receiptNumber,
                                   isFree: data.isMemberFree || false,
                                 });
-                                // Reload dashboard to update package status
-                                const dashboardRes = await fetch("/api/dashboard");
-                                const dashboardData = await dashboardRes.json();
-                                setData(dashboardData);
                               }
-                            } finally {
-                              setIsProcessingPayment(false);
-                            }
-                          }}
-                          disabled={isProcessingPayment}
-                        >
-                          {isProcessingPayment ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Memproses...
-                            </>
-                          ) : (
-                            <>
-                              <QrCode className="mr-2 h-4 w-4" />
-                              Dapatkan QR Code
-                            </>
-                          )}
-                        </Button>
-                      ) : (
-                        <Sheet open={paymentModal?.packageId === pkg.id} onOpenChange={(open) => {
-                          if (!open) setPaymentModal(null);
-                        }}>
-                          <SheetTrigger asChild>
-                            <Button
-                              size="sm"
-                              onClick={() => setPaymentModal({ packageId: pkg.id, package: pkg })}
-                            >
-                              Bayar Sekarang
-                            </Button>
-                          </SheetTrigger>
-                          {paymentModal?.packageId === pkg.id && (
-                            <SheetContent side="right" className="w-96 sm:w-full">
-                              <SheetHeader className="mb-6">
-                                <SheetTitle>
-                                  {isMemberActive ? "✓ Member Gratis" : "Konfirmasi Pembayaran"}
-                                </SheetTitle>
-                              </SheetHeader>
-                              <div className="space-y-6">
-                                {isMemberActive && (
-                                  <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                                    <p className="text-sm text-green-800 dark:text-green-200">
-                                      <strong>🎉 Gratis!</strong> Sebagai member aktif, Anda tidak perlu membayar biaya layanan.
+                            }}
+                          >
+                            <QrCode className="mr-2 h-4 w-4" />
+                            Tampilkan QR
+                          </Button>
+                        ) : isMemberActive ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              setIsProcessingPayment(true);
+                              try {
+                                const res = await fetch("/api/packages/pay", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ packageId: pkg.id }),
+                                });
+                                const data = await res.json();
+                                if (data.qrPayload) {
+                                  setQrModal({
+                                    qrPayload: data.qrPayload,
+                                    receiptNumber: pkg.receiptNumber,
+                                    isFree: data.isMemberFree || false,
+                                  });
+                                  // Reload dashboard to update package status
+                                  const dashboardRes = await fetch("/api/dashboard");
+                                  const dashboardData = await dashboardRes.json();
+                                  setData(dashboardData);
+                                }
+                              } finally {
+                                setIsProcessingPayment(false);
+                              }
+                            }}
+                            disabled={isProcessingPayment}
+                          >
+                            {isProcessingPayment ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Memproses...
+                              </>
+                            ) : (
+                              <>
+                                <QrCode className="mr-2 h-4 w-4" />
+                                Dapatkan QR Code
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <Sheet open={paymentModal?.packageId === pkg.id} onOpenChange={(open) => {
+                            if (!open) setPaymentModal(null);
+                          }}>
+                            <SheetTrigger asChild>
+                              <Button
+                                size="sm"
+                                onClick={() => setPaymentModal({ packageId: pkg.id, package: pkg })}
+                              >
+                                Bayar Sekarang
+                              </Button>
+                            </SheetTrigger>
+                            {paymentModal?.packageId === pkg.id && (
+                              <SheetContent side="right" className="w-96 sm:w-full">
+                                <SheetHeader className="mb-6">
+                                  <SheetTitle>
+                                    {isMemberActive ? "✓ Member Gratis" : "Konfirmasi Pembayaran"}
+                                  </SheetTitle>
+                                </SheetHeader>
+                                <div className="space-y-6">
+                                  {isMemberActive && (
+                                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                                      <p className="text-sm text-green-800 dark:text-green-200">
+                                        <strong>🎉 Gratis!</strong> Sebagai member aktif, Anda tidak perlu membayar biaya layanan.
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  <div className="space-y-3 bg-muted p-4 rounded-lg">
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-muted-foreground">Resi:</span>
+                                      <span className="font-mono font-semibold">{pkg.receiptNumber}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-muted-foreground">Kurir:</span>
+                                      <span>{pkg.courierName}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-muted-foreground">Lokasi:</span>
+                                      <span>{pkg.location.name}</span>
+                                    </div>
+                                    <div className="border-t pt-2 flex justify-between font-semibold">
+                                      <span>Total Pembayaran:</span>
+                                      <span>
+                                        {isMemberActive ? (
+                                          <span className="text-green-600">Rp 0 (Gratis)</span>
+                                        ) : (
+                                          `Rp ${(Number(pkg.basePrice) + Number(pkg.penaltyFee)).toLocaleString("id-ID")}`
+                                        )}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                                      <strong>Catatan:</strong> Setelah pembayaran, Anda akan mendapatkan QR code untuk mengambil paket.
                                     </p>
                                   </div>
-                                )}
 
-                                <div className="space-y-3 bg-muted p-4 rounded-lg">
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Resi:</span>
-                                    <span className="font-mono font-semibold">{pkg.receiptNumber}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Kurir:</span>
-                                    <span>{pkg.courierName}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Lokasi:</span>
-                                    <span>{pkg.location.name}</span>
-                                  </div>
-                                  <div className="border-t pt-2 flex justify-between font-semibold">
-                                    <span>Total Pembayaran:</span>
-                                    <span>
-                                      {isMemberActive ? (
-                                        <span className="text-green-600">Rp 0 (Gratis)</span>
-                                      ) : (
-                                        `Rp ${(Number(pkg.basePrice) + Number(pkg.penaltyFee)).toLocaleString("id-ID")}`
-                                      )}
-                                    </span>
-                                  </div>
+                                  <Button
+                                    className="w-full"
+                                    onClick={() => handlePayPackage(pkg)}
+                                    disabled={isProcessingPayment}
+                                  >
+                                    {isProcessingPayment ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Memproses...
+                                      </>
+                                    ) : isMemberActive ? (
+                                      "Dapatkan QR Code"
+                                    ) : (
+                                      "Lanjutkan Pembayaran"
+                                    )}
+                                  </Button>
                                 </div>
-
-                                <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                                    <strong>Catatan:</strong> Setelah pembayaran, Anda akan mendapatkan QR code untuk mengambil paket.
-                                  </p>
-                                </div>
-
-                                <Button
-                                  className="w-full"
-                                  onClick={() => handlePayPackage(pkg)}
-                                  disabled={isProcessingPayment}
-                                >
-                                  {isProcessingPayment ? (
-                                    <>
-                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                      Memproses...
-                                    </>
-                                  ) : isMemberActive ? (
-                                    "Dapatkan QR Code"
-                                  ) : (
-                                    "Lanjutkan Pembayaran"
-                                  )}
-                                </Button>
-                              </div>
-                            </SheetContent>
-                          )}
-                        </Sheet>
-                      )}
+                              </SheetContent>
+                            )}
+                          </Sheet>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
               ))
             )}
           </TabsContent>
