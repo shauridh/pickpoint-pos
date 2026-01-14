@@ -73,9 +73,20 @@ export async function registerUser(data: {
   apartmentName?: string;
 }) {
   try {
+
+    // Format phone ke awalan 62
+    const formatPhone = (value: string) => {
+      let cleaned = value.replace(/\D/g, "");
+      if (cleaned.startsWith("0")) {
+        cleaned = "62" + cleaned.slice(1);
+      }
+      return cleaned;
+    };
+    const phone = formatPhone(data.phone);
+
     // Check if user already exists
     const existing = await prisma.user.findFirst({
-      where: { phone: data.phone, role: "CUSTOMER" }
+      where: { phone, role: "CUSTOMER" }
     });
 
     if (existing) {
@@ -93,7 +104,7 @@ export async function registerUser(data: {
     // Create user
     await prisma.user.create({
       data: {
-        phone: data.phone,
+        phone,
         name: data.name,
         pin: hashedPin,
         unit: data.unit || "",

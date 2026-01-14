@@ -24,12 +24,23 @@ export async function createCustomer(data: {
     if (!session.isLoggedIn) {
       return { success: false, message: "Unauthorized" };
     }
+
     if (!data.name || !data.phone || !data.unit || !data.apartmentName) {
       return { success: false, message: "Semua field harus diisi" };
     }
 
+    // Format phone ke awalan 62
+    const formatPhone = (value: string) => {
+      let cleaned = value.replace(/\D/g, "");
+      if (cleaned.startsWith("0")) {
+        cleaned = "62" + cleaned.slice(1);
+      }
+      return cleaned;
+    };
+    const phone = formatPhone(data.phone);
+
     const existing = await prisma.user.findFirst({
-      where: { phone: data.phone, role: "CUSTOMER" },
+      where: { phone, role: "CUSTOMER" },
     });
 
     if (existing) {
@@ -39,7 +50,7 @@ export async function createCustomer(data: {
     const customer = await prisma.user.create({
       data: {
         name: data.name,
-        phone: data.phone,
+        phone,
         unit: data.unit,
         apartmentName: data.apartmentName,
         role: "CUSTOMER",
