@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { Camera, Check, RefreshCw, X } from "lucide-react";
+import imageCompression from "browser-image-compression";
 
 interface KioskWebcamProps {
   onUpload: (url: string) => void;
@@ -22,7 +23,7 @@ export function KioskWebcam({ onUpload, onCancel, instruction }: KioskWebcamProp
   const [snapshot, setSnapshot] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const filename = useMemo(() => `drop-${Date.now()}.jpg`, []);
+  const [filename, setFilename] = useState<string | null>(null);
 
   const handleCapture = useCallback(() => {
     setError(null);
@@ -32,37 +33,58 @@ export function KioskWebcam({ onUpload, onCancel, instruction }: KioskWebcamProp
       return;
     }
     setSnapshot(image);
+    setFilename(`drop-${Date.now()}.jpg`);
   }, []);
 
   const handleRetake = useCallback(() => {
     setSnapshot(null);
     setError(null);
+    setFilename(null);
   }, []);
 
   const handleUpload = useCallback(async () => {
-    if (!snapshot) return;
+    if (!snapshot || !filename) return;
     setIsUploading(true);
     setError(null);
 
     try {
       const blob = await (await fetch(snapshot)).blob();
+      const compressedBlob = await imageCompression(blob, {
+        maxSizeMB: 0.7,
+        maxWidthOrHeight: 1400,
+        useWebWorker: true,
+        initialQuality: 0.8,
+        fileType: "image/jpeg",
+      });
+
       const formData = new FormData();
-      formData.append("photo", blob, filename);
+      formData.append("photo", compressedBlob, filename);
 
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
+      const data = await response.json().catch(() => null);
+
       if (!response.ok) {
-        throw new Error("Upload gagal");
+        throw new Error(data?.error || "Upload gagal");
       }
 
-      const data = await response.json();
+      if (!data?.url) {
+        throw new Error("URL upload tidak ditemukan");
+      }
+
       onUpload(data.url);
+      setSnapshot(null);
+      setFilename(null);
     } catch (err) {
       console.error("Upload error", err);
-      setError("Gagal mengunggah foto. Silakan periksa koneksi dan coba lagi.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Gagal mengunggah foto. Silakan periksa koneksi dan coba lagi."
+      );
     } finally {
       setIsUploading(false);
     }
