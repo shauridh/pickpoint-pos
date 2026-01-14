@@ -3,7 +3,7 @@ import { SessionOptions } from "iron-session";
 const rawPassword = process.env.SESSION_SECRET || "";
 const fallbackPassword = "dev_fallback_session_secret_32_chars_min__";
 const password = rawPassword.length >= 32 ? rawPassword : fallbackPassword;
-const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const SESSION_TTL_SECONDS = 365 * 24 * 60 * 60; // 1 year (persist until manual logout)
 
 if (rawPassword.length < 32) {
   console.warn(

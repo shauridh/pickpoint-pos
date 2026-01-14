@@ -58,6 +58,31 @@ const statusColors: Record<string, string> = {
   RETURNED: "bg-slate-200 text-slate-800",
 };
 
+type PickupQrPayload = {
+  type?: string;
+  packageId?: string;
+  receipt?: string;
+  location?: string;
+};
+
+const parsePickupPayload = (raw: string): PickupQrPayload | null => {
+  if (!raw || raw[0] !== "{") return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.type === "pickup" && typeof parsed.receipt === "string") {
+      return {
+        type: parsed.type,
+        receipt: parsed.receipt,
+        packageId: typeof parsed.packageId === "string" ? parsed.packageId : undefined,
+        location: typeof parsed.location === "string" ? parsed.location : undefined,
+      };
+    }
+  } catch (error) {
+    console.debug("QR payload parse error", error);
+  }
+  return null;
+};
+
 export default function KioskClient({
   initialPackages,
 }: {
@@ -103,16 +128,25 @@ export default function KioskClient({
     setMessage(null);
     setSelectedPackage(null);
 
-    const searchValue = receiptInput.trim().toLowerCase();
-
-    if (!searchValue) {
+    const rawInput = receiptInput.trim();
+    if (!rawInput) {
       setMessage({ type: "error", text: "Masukkan kata kunci pencarian" });
       return;
     }
 
+    const qrPayload = parsePickupPayload(rawInput);
+    const normalizedReceipt = (qrPayload?.receipt || rawInput).trim();
+    const searchValue = normalizedReceipt.toLowerCase();
+
+    if (qrPayload?.receipt && qrPayload.receipt !== receiptInput) {
+      setReceiptInput(qrPayload.receipt);
+    }
+
+    const activeSearchType = qrPayload ? "resi" : searchType;
+
     let pkg: PackageItem | undefined;
 
-    switch (searchType) {
+    switch (activeSearchType) {
       case "resi":
         pkg = packages.find((p) => p.receiptNumber.toLowerCase() === searchValue);
         break;
@@ -129,6 +163,19 @@ export default function KioskClient({
 
     if (!pkg) {
       setMessage({ type: "error", text: "Paket tidak ditemukan" });
+      return;
+    }
+
+    if (qrPayload?.location && pkg.locationName.toLowerCase() !== qrPayload.location.toLowerCase()) {
+      setMessage({
+        type: "error",
+        text: `QR khusus lokasi ${qrPayload.location}, bukan ${pkg.locationName}`,
+      });
+      return;
+    }
+
+    if (qrPayload?.packageId && pkg.id !== qrPayload.packageId) {
+      setMessage({ type: "error", text: "QR tidak cocok dengan paket ini" });
       return;
     }
 

@@ -21,12 +21,13 @@ export async function getSessionFromClient(): Promise<SessionData> {
     }
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch session (${response.status})`);
+      console.error("Session fetch failed", response.status, await response.text().catch(() => ""));
+      return {};
     }
 
     return await response.json();
   } catch (error) {
     console.error("Fetch session error:", error);
-    throw error;
+    return {};
   }
 }
