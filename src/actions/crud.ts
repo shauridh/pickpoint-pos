@@ -81,14 +81,20 @@ export async function updateCustomer(
       return { success: false, message: "Nomor HP sudah digunakan customer lain" };
     }
 
+    let updateData: any = {
+      name: data.name,
+      phone: data.phone,
+      unit: data.unit,
+      apartmentName: data.apartmentName,
+    };
+    // Jika ada field pin dan valid, hash dan update
+    if (data.pin && /^\d{6}$/.test(data.pin)) {
+      const bcrypt = require("bcryptjs");
+      updateData.pin = await bcrypt.hash(data.pin, 10);
+    }
     const customer = await prisma.user.update({
       where: { id },
-      data: {
-        name: data.name,
-        phone: data.phone,
-        unit: data.unit,
-        apartmentName: data.apartmentName,
-      },
+      data: updateData,
     });
 
     revalidatePath("/admin/customers");

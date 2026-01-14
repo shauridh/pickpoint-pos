@@ -47,6 +47,7 @@ type FormData = {
   phone: string;
   unit: string;
   apartmentName: string;
+  pin?: string;
 };
 
 export default function CustomersClient({ customers, locations }: { customers: Customer[]; locations: Location[] }) {
@@ -59,6 +60,7 @@ export default function CustomersClient({ customers, locations }: { customers: C
     phone: "",
     unit: "",
     apartmentName: locations[0]?.name ?? "",
+    pin: ""
   });
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -83,14 +85,28 @@ export default function CustomersClient({ customers, locations }: { customers: C
         phone: customer.phone,
         unit: customer.unit,
         apartmentName: customer.apartmentName,
+        pin: ""
       });
     } else {
       setEditingId(null);
-      setFormData({ name: "", phone: "", unit: "", apartmentName: locations[0]?.name ?? "" });
+      setFormData({ name: "", phone: "", unit: "", apartmentName: locations[0]?.name ?? "", pin: "" });
     }
     setError(null);
     setDialogOpen(true);
   };
+        {editingId && (
+          <div className="space-y-2">
+            <Label>Reset PIN (opsional, 6 digit)</Label>
+            <Input
+              type="password"
+              value={formData.pin || ""}
+              onChange={(e) => setFormData({ ...formData, pin: e.target.value.replace(/[^0-9]/g, "").slice(0, 6) })}
+              placeholder="Masukkan PIN baru"
+              maxLength={6}
+            />
+            <span className="text-xs text-muted-foreground">Kosongkan jika tidak ingin reset PIN</span>
+          </div>
+        )}
 
   const handleSubmit = () => {
     setError(null);
@@ -99,9 +115,17 @@ export default function CustomersClient({ customers, locations }: { customers: C
       return;
     }
     startTransition(async () => {
+      let submitData = { ...formData };
+      // Validasi PIN jika diisi
+      if (editingId && submitData.pin && submitData.pin.length === 6) {
+        // PIN valid, kirim ke backend
+      } else if (editingId) {
+        // Jangan kirim field pin jika kosong
+        delete submitData.pin;
+      }
       const result = editingId
-        ? await updateCustomer(editingId, formData)
-        : await createCustomer(formData);
+        ? await updateCustomer(editingId, submitData)
+        : await createCustomer(submitData);
 
       if (!result.success) {
         setError(result.message || "Terjadi kesalahan");
