@@ -143,10 +143,8 @@ export default function LoginPage() {
           title: "Sukses",
           description: result.message + ". Silakan login dengan PIN yang baru dibuat.",
         });
-        // Setelah register, arahkan ke step PIN dan isi otomatis PIN
-        setStep("pin");
-        setIsNewUser(false);
-        // PIN tetap diisi agar user tinggal klik login
+        // Auto login sudah dilakukan di server action, langsung ke dashboard customer
+        router.push("/dashboard");
       } else {
         toast({
           title: "Error",
@@ -187,15 +185,8 @@ export default function LoginPage() {
           title: "Sukses",
           description: result.message,
         });
-        // Ambil role user setelah login
-        const profileRes = await fetch("/api/profile");
-        const profileData = await profileRes.json();
-        const role = profileData.user?.role || "CUSTOMER";
-        if (role === "ADMIN" || role === "STAFF") {
-          router.push("/admin");
-        } else {
-          router.push("/dashboard");
-        }
+        // Login via /login selalu diarahkan ke dashboard customer
+        router.push("/dashboard");
       } else {
         toast({
           title: "Error",
