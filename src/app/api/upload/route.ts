@@ -13,14 +13,19 @@ export async function POST(request: NextRequest) {
     const bytes = await photo.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const filename = `package-${Date.now()}.jpg`;
-    const publicUrl = await uploadImageToSupabase(buffer, filename);
-    if (!publicUrl) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    try {
+      const publicUrl = await uploadImageToSupabase(buffer, filename);
+      if (!publicUrl) {
+        return NextResponse.json({ error: "Upload failed (no URL)" }, { status: 500 });
+      }
+      return NextResponse.json({
+        success: true,
+        url: publicUrl,
+      });
+    } catch (err: any) {
+      console.error('Upload error detail:', err);
+      return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 });
     }
-    return NextResponse.json({
-      success: true,
-      url: publicUrl,
-    });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
