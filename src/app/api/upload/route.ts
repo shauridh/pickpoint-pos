@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { uploadImageToSupabase } from "@/lib/supabase-storage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,21 +12,14 @@ export async function POST(request: NextRequest) {
 
     const bytes = await photo.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Ensure uploads directory exists
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
-
     const filename = `package-${Date.now()}.jpg`;
-    const filepath = join(uploadsDir, filename);
-
-    await writeFile(filepath, buffer);
-
+    const publicUrl = await uploadImageToSupabase(buffer, filename);
+    if (!publicUrl) {
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    }
     return NextResponse.json({
       success: true,
-      url: `/uploads/${filename}`,
+      url: publicUrl,
     });
   } catch (error) {
     console.error("Upload error:", error);
