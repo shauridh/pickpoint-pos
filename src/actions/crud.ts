@@ -28,8 +28,8 @@ export async function createCustomer(data: {
       return { success: false, message: "Semua field harus diisi" };
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { phone: data.phone },
+    const existing = await prisma.user.findFirst({
+      where: { phone: data.phone, role: "CUSTOMER" },
     });
 
     if (existing) {
@@ -70,6 +70,15 @@ export async function updateCustomer(
     }
     if (!data.name || !data.phone || !data.unit || !data.apartmentName) {
       return { success: false, message: "Semua field harus diisi" };
+    }
+
+    // Check if new phone already exists for another customer
+    const existing = await prisma.user.findFirst({
+      where: { phone: data.phone, role: "CUSTOMER", id: { not: id } },
+    });
+
+    if (existing) {
+      return { success: false, message: "Nomor HP sudah digunakan customer lain" };
     }
 
     const customer = await prisma.user.update({
