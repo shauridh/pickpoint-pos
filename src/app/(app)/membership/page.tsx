@@ -53,9 +53,13 @@ export default function MembershipPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const session = await getSessionFromClient();
-      if (!session.isLoggedIn) {
-        router.push("/login");
+      try {
+        const session = await getSessionFromClient();
+        if (!session.userId) {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Membership session check error:", error);
       }
     };
 
