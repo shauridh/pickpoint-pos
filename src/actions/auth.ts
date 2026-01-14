@@ -116,9 +116,7 @@ export async function registerUser(data: {
 export async function setCustomerPin(phone: string, pin: string) {
   try {
     // Validate PIN (must be 6 digits)
-?
-?\d{6}$/.test(pin)) {
-      if (!/^\d{6}$/.test(pin)) {
+    if (!/^\d{6}$/.test(pin)) {
       return { success: false, message: "PIN harus 6 digit angka" };
     }
 
