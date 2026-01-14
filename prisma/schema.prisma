@@ -58,7 +58,7 @@ model User {
   id               String        @id @default(uuid())
   username         String?       @unique
   name             String
-  phone            String        @unique
+  phone            String
   unit             String?
   apartmentName    String?
   pin              String?

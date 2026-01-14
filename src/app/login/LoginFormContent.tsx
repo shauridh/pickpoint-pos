@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { loginUser, registerUser, checkUserExists } from "@/actions/auth";
+import { loginUser, registerUser, checkUserExists, setCustomerPin } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type LoginStep = "phone" | "pin" | "register";
+type LoginStep = "phone" | "pin" | "register" | "setPin";
 
 export default function LoginPage() {
   const [step, setStep] = useState<LoginStep>("phone");
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [apartmentName, setApartmentName] = useState("");
+  const [newPin, setNewPin] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
@@ -80,20 +81,26 @@ export default function LoginPage() {
       const result = await checkUserExists(formattedPhone);
 
       if (result.isNewUser) {
-        // New user → go to registration
         setIsNewUser(true);
         setStep("register");
         toast({
           title: "Pengguna Baru",
           description: "Silakan lengkapi data untuk registrasi",
         });
-      } else {
-        // Existing user → go to PIN
+      } else if (result.hasPin) {
         setIsNewUser(false);
         setStep("pin");
         toast({
           title: `Selamat datang kembali, ${result.userName}!`,
           description: "Masukkan PIN Anda",
+        });
+      } else {
+        // Customer sudah ada (dibuat admin) tapi belum punya PIN
+        setIsNewUser(false);
+        setStep("setPin");
+        toast({
+          title: "Set PIN",
+          description: "Buat PIN baru untuk akun Anda",
         });
       }
     } catch (error) {
@@ -110,10 +117,10 @@ export default function LoginPage() {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !pin) {
+    if (!name || !pin || !unit || !apartmentName) {
       toast({
         title: "Error",
-        description: "Nama dan PIN harus diisi",
+        description: "Nama, PIN, Unit, dan Nama Apartemen harus diisi",
         variant: "destructive",
       });
       return;
@@ -143,8 +150,52 @@ export default function LoginPage() {
           title: "Sukses",
           description: result.message + ". Silakan login dengan PIN yang baru dibuat.",
         });
-        // Auto login sudah dilakukan di server action, langsung ke dashboard customer
-        router.push("/dashboard");
+        // Kembali ke form login PIN
+        setStep("pin");
+        setIsNewUser(false);
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSetPinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newPin) {
+      toast({
+        title: "Error",
+        description: "PIN tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!/^\d{6}$/.test(newPin)) {
+      toast({
+        title: "Error",
+        description: "PIN harus 6 digit angka",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await setCustomerPin(phone, newPin);
+      if (result.success) {
+        toast({
+          title: "Sukses",
+          description: "PIN berhasil dibuat, silakan login",
+        });
+        setPin(newPin);
+        setStep("pin");
       } else {
         toast({
           title: "Error",
@@ -208,6 +259,7 @@ export default function LoginPage() {
             {step === "phone" && "Masuk atau daftar akun baru"}
             {step === "pin" && "Masukkan PIN Anda"}
             {step === "register" && "Lengkapi data registrasi"}
+            {step === "setPin" && "Buat PIN baru untuk akun Anda"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -276,23 +328,25 @@ export default function LoginPage() {
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium">Unit (opsional)</label>
+                <label className="text-sm font-medium">Unit *</label>
                 <Input
                   type="text"
-                  placeholder="A-101"
+                  placeholder="Contoh: A-12"
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
                   className="mt-1"
+                  required
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Nama Apartemen (opsional)</label>
+                <label className="text-sm font-medium">Nama Apartemen *</label>
                 <Input
                   type="text"
-                  placeholder="Apartemen Sudirman"
+                  placeholder="Nama apartemen"
                   value={apartmentName}
                   onChange={(e) => setApartmentName(e.target.value)}
                   className="mt-1"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -309,6 +363,43 @@ export default function LoginPage() {
                     setName("");
                     setUnit("");
                     setApartmentName("");
+                  }}
+                >
+                  Ubah Nomor
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {step === "setPin" && (
+            <form onSubmit={handleSetPinSubmit} className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Nomor: {phone}
+              </p>
+              <div>
+                <label className="text-sm font-medium">Buat PIN (6 digit)</label>
+                <Input
+                  type="password"
+                  placeholder="••••••"
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value.slice(0, 6))}
+                  maxLength={6}
+                  className="mt-1"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Menyimpan..." : "Simpan PIN"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setStep("phone");
+                    setNewPin("");
+                    setPin("");
                   }}
                 >
                   Ubah Nomor

@@ -77,7 +77,7 @@ export async function quickCreateUser(input: {
       return { success: false, message: "Semua field harus diisi" };
     }
 
-    const existing = await prisma.user.findUnique({ where: { phone: input.phone } });
+    const existing = await prisma.user.findFirst({ where: { phone: input.phone, role: "CUSTOMER" } });
     if (existing) {
       return {
         success: false,

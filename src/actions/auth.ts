@@ -6,12 +6,20 @@ import bcrypt from "bcryptjs";
 
 export async function loginUser(phone: string, pin: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { phone },
+    const user = await prisma.user.findFirst({
+      where: { phone, role: "CUSTOMER" },
     });
 
     if (!user) {
       return { success: false, message: "User tidak ditemukan" };
+    }
+
+    // /login hanya untuk CUSTOMER, admin/staff wajib lewat /admin-login
+    if (user.role === "ADMIN" || user.role === "STAFF") {
+      return {
+        success: false,
+        message: "Silakan login via /admin-login untuk admin/staff",
+      };
     }
 
     // For demo, allow any PIN that matches the hashed one
@@ -39,16 +47,17 @@ export async function loginUser(phone: string, pin: string) {
 
 export async function checkUserExists(phone: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { phone },
-      select: { id: true, name: true, role: true }
+    const user = await prisma.user.findFirst({
+      where: { phone, role: "CUSTOMER" },
+      select: { id: true, name: true, role: true, pin: true }
     });
 
     return {
       exists: !!user,
       isNewUser: !user,
       userName: user?.name,
-      role: user?.role
+      role: user?.role,
+      hasPin: !!user?.pin,
     };
   } catch (error) {
     console.error("Check user error:", error);
@@ -65,8 +74,8 @@ export async function registerUser(data: {
 }) {
   try {
     // Check if user already exists
-    const existing = await prisma.user.findUnique({
-      where: { phone: data.phone }
+    const existing = await prisma.user.findFirst({
+      where: { phone: data.phone, role: "CUSTOMER" }
     });
 
     if (existing) {
@@ -82,7 +91,7 @@ export async function registerUser(data: {
     const hashedPin = await bcrypt.hash(data.pin, 10);
 
     // Create user
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         phone: data.phone,
         name: data.name,
@@ -93,22 +102,50 @@ export async function registerUser(data: {
       }
     });
 
-    // Auto-login after registration
-    await setSession({
-      userId: user.id,
-      phone: user.phone,
-      name: user.name,
-      isLoggedIn: true,
-    });
-
     return {
       success: true,
       message: "Registrasi berhasil!",
-      userId: user.id
+      userId: undefined
     };
   } catch (error) {
     console.error("Register error:", error);
     return { success: false, message: "Terjadi kesalahan saat registrasi" };
+  }
+}
+
+export async function setCustomerPin(phone: string, pin: string) {
+  try {
+    // Validate PIN (must be 6 digits)
+?
+?\d{6}$/.test(pin)) {
+      if (!/^\d{6}$/.test(pin)) {
+      return { success: false, message: "PIN harus 6 digit angka" };
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { phone, role: "CUSTOMER" },
+    });
+
+    if (!user) {
+      return { success: false, message: "User tidak ditemukan" };
+    }
+
+    // Only allow setting PIN if not set
+    if (user.pin) {
+      return { success: false, message: "PIN sudah terdaftar, silakan login" };
+    }
+
+    const hashedPin = await bcrypt.hash(pin, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { pin: hashedPin },
+    });
+
+    return { success: true, message: "PIN berhasil dibuat" };
+  } catch (error) {
+    console.error("Set PIN error:", error);
+    return { success: false, message: "Terjadi kesalahan" };
   }
 }
 
